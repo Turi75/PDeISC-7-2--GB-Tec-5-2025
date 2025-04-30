@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Proyecto 1 - DOM Básico</title>
+  <!--Se crea el style para poder cambiar esteticamente como se ve la pagina-->
+  <style>
+    body { 
+        font-family: Arial; 
+        margin: 20px; 
+        background: #fafafa; 
+         }
+    button { 
+        margin: 5px; 
+        padding: 8px 12px; 
+        border: none; border-radius: 4px; 
+        cursor: pointer; 
+         }
+    #imagen { 
+        display: block; 
+        margin-top: 20px; 
+        max-width: 100%; 
+        height: auto; 
+        }
+  </style>
+</head>
+<body>
+    <!--Se crea el contenedor con todos los botones y su informacion que muestra dentro de ellos-->
+  <div id="contenedor"></div>
+  <button onclick="agregarH1()">Agregar H1 ("Hola DOM")</button>
+  <button onclick="cambiarTexto()">Cambiar a "Chau DOM"</button>
+  <button onclick="cambiarColor()">Cambiar color</button>
+  <button onclick="agregarImagen()">Agregar imagen</button>
+  <button onclick="cambiarImagen()">Cambiar imagen</button>
+  <button onclick="cambiarTamano()">Cambiar tamaño</button>
+
+  <img id="imagen" src="" alt="Imagen dinámica">
+  <!--Se importa el script-->
+  <script src="script.js"></script>
+</body>
+</html>

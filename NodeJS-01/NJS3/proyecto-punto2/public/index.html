@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Proyecto 2 - Eventos Visuales</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    .botones {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .botones button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #eee;
+      color: #333;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.2s, color 0.2s;
+    }
+    #salida {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Proyecto 2 - Eventos Visuales</h1>
+
+  <div class="botones">
+    <button id="btnClick">Click para botón rojo</button>
+    <button id="btnDblClick">Doble Click para botón azul</button>
+    <button id="btnHover">Hover</button>
+    <button id="btnDown">Push</button>
+    <button id="btnUp">Mouse Up</button>
+  </div>
+
+  <div id="salida">Interacciona con los botones para ver efectos</div>
+
+  <script src="script.js"></script>
+</body>
+</html>

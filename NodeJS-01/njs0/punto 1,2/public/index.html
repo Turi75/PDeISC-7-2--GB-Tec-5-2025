@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Registro Dinámico</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <!-- FORMULARIO -->
+    <section class="lado lado-form">
+      <h1>Registro de Usuario</h1>
+      <form id="formDatos" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" required>
+          <span class="error-msg" id="err-nombre"></span>
+        </div>
+        <div class="campo">
+          <label for="apellido">Apellido</label>
+          <input type="text" id="apellido" name="apellido" required>
+          <span class="error-msg" id="err-apellido"></span>
+        </div>
+        <div class="campo">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" required>
+          <span class="error-msg" id="err-email"></span>
+        </div>
+        <div class="campo">
+          <label for="pais">País</label>
+          <select id="pais" name="pais" required>
+            <option value="">Seleccione...</option>
+            <option>Argentina</option>
+            <option>Brasil</option>
+            <option>Chile</option>
+            <option>España</option>
+            <option>México</option>
+          </select>
+          <span class="error-msg" id="err-pais"></span>
+        </div>
+        <button type="submit" class="btn">Guardar</button>
+        <p id="msgExito" class="msg-exito">¡Usuario registrado!</p>
+      </form>
+    </section>
+
+    <!-- LISTADO DINÁMICO -->
+    <section class="lado lado-lista">
+      <div class="rectangulo">
+        <h2>Listado de personas registradas</h2>
+      </div>
+      <ul id="listaPersonas" class="lista-personas">
+        <!-- se añaden <li> de los usuarios ingresados dinámicamente -->
+      </ul>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

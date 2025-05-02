@@ -1,0 +1,169 @@
+/* Reset & fondo */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #ea9c1d, #6938ef);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  /* Layout principal */
+  .contenedor {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+  }
+  .lado {
+    background: #fff;
+    border-radius: 10px;
+    flex: 1;
+    padding: 25px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    transition: transform .3s, box-shadow .3s;
+  }
+  .lado:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  }
+  
+  /* Títulos */
+  .lado-form h1,
+  .rectangulo h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  /* Campos de formulario */
+  .campo {
+    margin-bottom: 15px;
+    position: relative;
+  }
+  .campo label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #444;
+  }
+  .campo input,
+  .campo select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border .2s;
+  }
+  .campo input:focus,
+  .campo select:focus {
+    outline: none;
+    border-color: #243bec;
+  }
+  .campo small {
+    display: block;
+    font-size: .8rem;
+    color: #666;
+    margin-top: 3px;
+  }
+  
+  /* Radios en línea */
+  .campo-radio .radio-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 6px;
+  }
+  .campo-radio .radio-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .campo-radio .radio-group input {
+    margin-right: 6px;
+    transform: scale(1.1);
+  }
+  
+  /* Input deshabilitado */
+  #cantidadHijos[disabled] {
+    background: #f5f5f5;
+  }
+  
+  /* Mensajes */
+  .error {
+    color: #c00;
+    font-size: .9rem;
+    margin-top: 4px;
+    min-height: 1.2em;
+  }
+  .msg-exito,
+  .msg-error {
+    text-align: center;
+    margin-top: 12px;
+    font-weight: 600;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity .4s, transform .4s;
+  }
+  .msg-exito {
+    color: #28a745;
+  }
+  .msg-error {
+    color: #d63333;
+  }
+  
+  /* Botón */
+  .btn {
+    width: 100%;
+    background: #083c8a;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background .3s;
+  }
+  .btn:hover {
+    background: #2f3ddc;
+  }
+  
+  /* Listado */
+  .rectangulo {
+    background: #f5c8e4;
+    padding: 16px;
+    border: 2px solid #ee1d63;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  .lista-personas {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+    gap: 15px;
+  }
+  .lista-personas li {
+    background: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.07);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .lista-personas li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(71, 0, 104, 0.877);
+  }
+  .lista-personas li::before {
+    content: '👤';
+    margin-right: 6px;
+  }
+  

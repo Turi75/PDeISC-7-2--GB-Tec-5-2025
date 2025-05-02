@@ -1,0 +1,137 @@
+/* Reset básico */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #ff0000, #3879e2);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.contenedor {
+  display: flex;
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.lado {
+  background: #fff;
+  border-radius: 12px;
+  flex: 1;
+  padding: 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+.lado:hover {
+  transform: translateY(-5px);
+}
+
+/* FORMULARIO */
+.lado-form h1 {
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+.campo {
+  margin-bottom: 16px;
+  position: relative;
+}
+.campo label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #444;
+}
+.campo input,
+.campo select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border 0.2s ease;
+}
+.campo input:focus,
+.campo select:focus {
+  outline: none;
+  border-color: #6a11cb;
+}
+
+/* Mensajes de error */
+.error-msg {
+  color: #c00;
+  font-size: 0.9rem;
+  margin-top: 4px;
+  display: block;
+  min-height: 1.2em;
+}
+
+/* Botón y mensaje éxito */
+.btn {
+  background: #6a11cb;
+  color: #fff;
+  border: none;
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+.btn:hover {
+  background: #2575fc;
+}
+
+.msg-exito {
+  text-align: center;
+  margin-top: 12px;
+  color: #28a745;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* LISTADO */
+.rectangulo {
+  background: #f0f4ff;
+  padding: 16px;
+  border: 2px solid #d0d8ff;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.rectangulo h2 {
+  color: #333;
+  letter-spacing: 0.5px;
+}
+
+.lista-personas {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 16px;
+}
+.lista-personas li {
+  background: #fff;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.lista-personas li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgb(172, 12, 148);
+}
+.lista-personas li::before {
+  content: '👤';
+  margin-right: 8px;
+}

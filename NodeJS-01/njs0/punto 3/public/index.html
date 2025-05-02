@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Almacén de Personas</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <!-- Formulario -->
+    <section class="lado lado-form">
+      <h1>Registro de Persona</h1>
+      <form id="formPersona" novalidate>
+        <div class="campo">
+          <label for="nombre">Nombre *</label>
+          <input type="text" id="nombre" name="nombre" required>
+          <span class="error" id="err-nombre"></span>
+        </div>
+
+        <div class="campo">
+          <label for="apellido">Apellido *</label>
+          <input type="text" id="apellido" name="apellido" required>
+          <span class="error" id="err-apellido"></span>
+        </div>
+
+        <div class="campo">
+          <label for="edad">Edad *</label>
+          <input type="number" id="edad" name="edad" min="0" max="120" required>
+          <span class="error" id="err-edad"></span>
+        </div>
+
+        <div class="campo">
+          <label for="nacimiento">Fecha de Nacimiento *</label>
+          <input type="date" id="nacimiento" name="nacimiento" required>
+          <span class="error" id="err-nacimiento"></span>
+        </div>
+
+        <div class="campo campo-radio">
+          <label>Sexo *</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="sexo" value="Masculino" required>
+              <span>Masculino</span>
+            </label>
+            <label>
+              <input type="radio" name="sexo" value="Femenino">
+              <span>Femenino</span>
+            </label>
+          </div>
+          <span class="error" id="err-sexo"></span>
+        </div>
+
+        <div class="campo">
+          <label for="documento">Documento *</label>
+          <input type="text" id="documento" name="documento" pattern="\d{6,12}" required>
+          <small>6–12 dígitos</small>
+          <span class="error" id="err-documento"></span>
+        </div>
+
+        <div class="campo">
+          <label for="estadoCivil">Estado Civil *</label>
+          <select id="estadoCivil" name="estadoCivil" required>
+            <option value="">Seleccione...</option>
+            <option>Soltero/a</option>
+            <option>Casado/a</option>
+            <option>Divorciado/a</option>
+            <option>Viudo/a</option>
+          </select>
+          <span class="error" id="err-estadoCivil"></span>
+        </div>
+
+        <div class="campo">
+          <label for="nacionalidad">Nacionalidad *</label>
+          <input type="text" id="nacionalidad" name="nacionalidad" required>
+          <span class="error" id="err-nacionalidad"></span>
+        </div>
+
+        <div class="campo">
+          <label for="telefono">Teléfono *</label>
+          <input type="tel" id="telefono" name="telefono" pattern="\d{7,15}" required>
+          <small>7–15 dígitos</small>
+          <span class="error" id="err-telefono"></span>
+        </div>
+
+        <div class="campo">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required>
+          <span class="error" id="err-email"></span>
+        </div>
+
+        <div class="campo campo-radio">
+          <label>¿Tiene hijos? *</label>
+          <div class="radio-group">
+            <label>
+              <input type="radio" name="tieneHijos" value="si" required>
+              <span>Sí</span>
+            </label>
+            <label>
+              <input type="radio" name="tieneHijos" value="no">
+              <span>No</span>
+            </label>
+          </div>
+          <span class="error" id="err-tieneHijos"></span>
+        </div>
+
+        <div class="campo">
+          <label for="cantidadHijos">Cantidad de hijos</label>
+          <input type="number" id="cantidadHijos" name="cantidadHijos" min="1" disabled>
+          <span class="error" id="err-cantidadHijos"></span>
+        </div>
+
+        <button type="submit" class="btn">Guardar</button>
+        <p id="msgExito" class="msg-exito">¡Guardado correctamente!</p>
+        <p id="msgError" class="msg-error">Hubo errores, revisa el formulario.</p>
+      </form>
+    </section>
+
+    <!-- Listado dinámico -->
+    <section class="lado lado-lista">
+      <div class="rectangulo">
+        <h2>Personas Registradas</h2>
+      </div>
+      <ul id="listaPersonas" class="lista-personas"></ul>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

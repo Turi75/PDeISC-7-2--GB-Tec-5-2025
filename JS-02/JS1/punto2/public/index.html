@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicios push() y pop()</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <section class="lado lado-form">
+      <h1>Ejercicios push() y pop()</h1>
+      <form id="formEjercicios" novalidate>
+        <!-- EJERCICIO push() ya implementado... -->
+
+        <!-- NUEVO: EJERCICIO pop() -->
+        <div class="campo">
+          <label>1. Elimina el último elemento de un array de animales</label>
+          <button type="button" id="btnPopAnimales" class="btn">Pop Animales</button>
+          <div id="outAnimales" class="lista-personas"></div>
+        </div>
+
+        <div class="campo">
+          <label>2. Quita el último producto de la lista de compras y muestra cuál fue eliminado</label>
+          <button type="button" id="btnPopCompras" class="btn">Pop Compras</button>
+          <span class="error" id="err-compra"></span>
+          <div id="outCompras" class="lista-personas"></div>
+        </div>
+
+        <div class="campo">
+          <label>3. Usa un bucle while para vaciar un array con pop()</label>
+          <button type="button" id="btnVacia" class="btn">Vaciar Array</button>
+          <div id="outVaciado" class="lista-personas"></div>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

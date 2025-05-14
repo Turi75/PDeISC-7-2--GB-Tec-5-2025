@@ -1,0 +1,57 @@
+/* RESET & FONDO */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #ea9c1d, #6938ef);
+  display: flex; justify-content:center; align-items:flex-start;
+  min-height:100vh; padding:20px;
+}
+
+/* LAYOUT */
+.contenedor { width:100%; max-width:600px; }
+.lado {
+  background:#fff; border-radius:8px;
+  padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.lado h1 { text-align:center; margin-bottom:20px; color:#333; }
+
+/* CAMPOS */
+.campo {
+  margin-bottom:20px;
+  display:flex; flex-direction:column;
+}
+.campo label { font-weight:600; margin-bottom:8px; color:#444; }
+.campo input {
+  padding:8px; border:2px solid #ddd; border-radius:4px;
+  font-size:1rem; margin-bottom:6px; transition:border .2s;
+}
+.campo input:focus { outline:none; border-color:#25c610; }
+.error {
+  color:#c00; font-size:.9rem;
+  min-height:1.2em; margin-bottom:8px;
+}
+
+/* BOTONES */
+.btn {
+  background:#083c8a; color:#fff;
+  padding:10px; border:none; border-radius:4px;
+  cursor:pointer; font-size:1rem; transition:background .3s;
+  margin-bottom:12px;
+}
+.btn:hover { background:#2f3ddc; }
+
+/* LISTAS */
+.lista-personas {
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:8px;
+}
+.lista-personas div {
+  background:#eef; padding:6px 10px;
+  border-radius:4px; font-size:.9rem; color:#333;
+}
+
+/* Lista de colores */
+.lista-colores {
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:8px;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ejercicio con includes()</title>
+  <link rel="stylesheet" href="css.css" />
+</head>
+<body>
+  <div class="contenedor">
+    <div class="lado">
+      <h1>Ejercicio con includes()</h1>
+
+      <div class="campo">
+        <label>Usuarios:</label>
+        <div class="lista-personas" id="arrayUsuarios"></div>
+      </div>
+
+      <div class="campo">
+        <label>Colores:</label>
+        <div class="lista-personas" id="arrayColores"></div>
+      </div>
+
+      <div class="campo">
+        <label>Números:</label>
+        <div class="lista-personas" id="arrayNumeros"></div>
+      </div>
+
+      <button class="btn" id="buscarAdmin">¿Contiene "admin"?</button>
+      <button class="btn" id="buscarVerde">¿Existe el color "verde"?</button>
+
+      <div class="campo">
+        <label>Agregar número si no está:</label>
+        <input type="number" id="entradaNumero" placeholder="Ej: 25" />
+        <button class="btn" id="agregarNumero">Agregar al array</button>
+      </div>
+
+      <div class="campo">
+        <label>Resultado:</label>
+        <div class="lista-personas" id="resultado"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

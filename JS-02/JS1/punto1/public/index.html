@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio push() sin alertas</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <section class="lado lado-form">
+      <h1>Ejercicio push()</h1>
+      <form id="formPush" novalidate>
+        <!-- 1) Frutas -->
+        <div class="campo">
+          <label>1. Agregar tres frutas (hard-codeadas)</label>
+          <button type="button" id="btnPushFrutas" class="btn">Push Frutas</button>
+          <div id="outFrutas" class="lista-personas"></div>
+        </div>
+
+        <!-- 2) Amigos -->
+        <div class="campo">
+          <label>2. Agrega tus 3 amigos</label>
+          <input type="text" id="amigo1" placeholder="Amigo 1" required>
+          <input type="text" id="amigo2" placeholder="Amigo 2" required>
+          <input type="text" id="amigo3" placeholder="Amigo 3" required>
+          <button type="button" id="btnPushAmigos" class="btn">Push Amigos</button>
+          <span class="error" id="err-amigos"></span>
+          <div id="outAmigos" class="lista-personas"></div>
+        </div>
+
+        <!-- 3) Números -->
+        <div class="campo">
+          <label>3. Agrega número si es mayor que el último</label>
+          <input type="number" id="nuevoNumero" placeholder="Nuevo número">
+          <span class="error" id="err-nuevoNumero"></span>
+          <button type="button" id="btnPushNumero" class="btn">Push Número</button>
+          <div id="outNumeros" class="lista-personas"></div>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

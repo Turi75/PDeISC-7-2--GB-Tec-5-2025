@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Filtrado de Datos</title>
+  <link rel="stylesheet" href="css.css" />
+</head>
+<body>
+  <div class="contenedor">
+    <div class="lado">
+      <h1>Formulario de Filtrado</h1>
+      <form id="formulario">
+        <div class="campo">
+          <label for="numeros">Números (separados por coma):</label>
+          <input type="text" id="numeros" placeholder="Ej: 5,12,18,3" required />
+          <div class="error" id="errorNumeros"></div>
+        </div>
+
+        <div class="campo">
+          <label for="palabras">Palabras (separadas por coma):</label>
+          <input type="text" id="palabras" placeholder="Ej: casa,elefante,sol" required />
+          <div class="error" id="errorPalabras"></div>
+        </div>
+
+        <div class="campo">
+          <label for="usuarios">Usuarios (nombre:activo/desactivo, separados por coma):</label>
+          <input type="text" id="usuarios" placeholder="Ej: Juan:activo, Ana:desactivo, Pedro:activo" required />
+          <div class="error" id="errorUsuarios"></div>
+        </div>
+
+        <button type="submit" class="btn">Filtrar</button>
+      </form>
+
+      <div id="tablaResultados"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

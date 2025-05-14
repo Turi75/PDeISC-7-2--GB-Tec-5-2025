@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ejercicio con slice()</title>
+  <link rel="stylesheet" href="css.css" />
+</head>
+<body>
+  <div class="contenedor">
+    <div class="lado">
+      <h1>Manipulación con slice()</h1>
+
+      <!-- Mostrar arrays originales -->
+      <div class="campo">
+        <label>Array de números:</label>
+        <div class="lista-personas" id="arrayNumeros"></div>
+      </div>
+
+      <div class="campo">
+        <label>Array de películas:</label>
+        <div class="lista-personas" id="arrayPeliculas"></div>
+      </div>
+
+      <!-- Botones de acciones -->
+      <button class="btn" id="copiarNumeros">Copiar primeros 3 números</button>
+      <button class="btn" id="copiarPeliculas">Copiar películas de posición 2 a 4</button>
+      <button class="btn" id="ultimosNumeros">Copiar últimos 3 números</button>
+
+      <!-- Resultados -->
+      <div class="campo">
+        <label>Resultado:</label>
+        <div class="lista-personas" id="resultado"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

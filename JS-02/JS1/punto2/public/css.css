@@ -1,0 +1,61 @@
+/* Reset & fondo */
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(135deg,#ea9c1d,#6938ef);
+  display:flex; justify-content:center; align-items:flex-start;
+  min-height:100vh; padding:20px;
+}
+
+/* Layout principal */
+.contenedor {
+  display:flex; flex-wrap:wrap; gap:30px;
+  width:100%; max-width:1200px;
+}
+.lado {
+  background:#fff; border-radius:10px;
+  flex:1 1 400px; padding:25px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
+}
+.lado h1 {
+  text-align:center; margin-bottom:20px; color:#333;
+}
+
+/* Campo genérico */
+.campo {
+  margin-bottom:20px;
+  display:flex; flex-direction:column;
+}
+.campo label {
+  font-weight:600; margin-bottom:8px; color:#444;
+}
+.campo input {
+  padding:8px; border:2px solid #ddd; border-radius:6px;
+  font-size:1rem; margin-bottom:4px; transition:border .2s;
+}
+.campo input:focus { outline:none; border-color:#25c610; }
+
+/* Error inline */
+.error {
+  color:#c00; font-size:.9rem;
+  min-height:1.2em; margin-bottom:8px;
+}
+
+/* Botones */
+.btn {
+  background:#083c8a; color:#fff;
+  padding:8px 12px; border:none; border-radius:6px;
+  cursor:pointer; transition:background .3s;
+  margin-bottom:12px;
+}
+.btn:hover { background:#2f3ddc; }
+
+/* Salida dinámica */
+.lista-personas {
+  display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:8px;
+}
+.lista-personas div {
+  background:#eef; padding:6px 10px;
+  border-radius:4px; font-size:.9rem; color:#333;
+}

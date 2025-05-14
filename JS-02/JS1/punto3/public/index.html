@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio unshift()</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <section class="lado lado-form">
+      <h1>Ejercicio unshift()</h1>
+
+      <!-- 1) Colores -->
+      <div class="campo">
+        <label>1. Agrega tres colores al principio</label>
+        <button id="btnUnshiftColores" class="btn">Unshift Colores</button>
+        <div id="outColores" class="lista-colores"></div>
+      </div>
+
+      <!-- 2) Tareas urgentes -->
+      <div class="campo">
+        <label>2. Agrega tarea urgente al principio</label>
+        <input type="text" id="nuevaTarea" placeholder="Nueva tarea urgente">
+        <span id="err-tarea" class="error"></span>
+        <button id="btnUnshiftTarea" class="btn">Unshift Tarea</button>
+        <div id="outTareas" class="lista-personas"></div>
+      </div>
+
+      <!-- 3) Usuarios conectados -->
+      <div class="campo">
+        <label>3. Inserta usuario al principio</label>
+        <input type="text" id="nuevoUsuario" placeholder="Nuevo usuario conectado">
+        <span id="err-usuario" class="error"></span>
+        <button id="btnUnshiftUsuario" class="btn">Unshift Usuario</button>
+        <div id="outUsuarios" class="lista-personas"></div>
+      </div>
+
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

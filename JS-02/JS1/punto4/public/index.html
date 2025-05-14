@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cola de Atención</title>
+  <link rel="stylesheet" href="css.css" />
+</head>
+<body>
+  <div class="contenedor">
+    <div class="lado">
+      <h1>Cola de Atención</h1>
+
+      <form id="formulario">
+        <div class="campo">
+          <label for="nuevoCliente">Nombre del cliente</label>
+          <input type="text" id="nuevoCliente" placeholder="Ej: Juan Pérez" required />
+          <div class="error" id="errorMensaje"></div>
+        </div>
+        <button type="submit" class="btn">Agregar a la cola</button>
+      </form>
+
+      <button id="atender" class="btn">Atender siguiente</button>
+
+      <h2 style="margin-top:20px;">Clientes en espera</h2>
+      <div class="lista-personas" id="cola"></div>
+
+      <h2 style="margin-top:20px;">Último atendido</h2>
+      <div class="lista-personas" id="atendido"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ejercicio con splice()</title>
+  <link rel="stylesheet" href="css.css" />
+</head>
+<body>
+  <div class="contenedor">
+    <div class="lado">
+      <h1>Manipulación con splice()</h1>
+
+      <div class="campo">
+        <label>Arreglo actual de letras:</label>
+        <div class="lista-personas" id="arreglo"></div>
+      </div>
+
+      <button class="btn" id="eliminarLetras">Eliminar 2 letras desde posición 1</button>
+
+      <form id="formularioInsertar">
+        <div class="campo">
+          <label for="nuevoNombre">Insertar nuevo nombre en posición 2</label>
+          <input type="text" id="nuevoNombre" placeholder="Ej: Marta" required />
+          <div class="error" id="errorInsertar"></div>
+        </div>
+        <button type="submit" class="btn">Insertar</button>
+      </form>
+
+      <form id="formularioReemplazar">
+        <div class="campo">
+          <label for="inicioReemplazo">Posición inicial del reemplazo</label>
+          <input type="number" id="inicioReemplazo" min="0" placeholder="Ej: 1" required />
+        </div>
+        <div class="campo">
+          <label for="nuevo1">Nuevo elemento 1</label>
+          <input type="text" id="nuevo1" required />
+        </div>
+        <div class="campo">
+          <label for="nuevo2">Nuevo elemento 2</label>
+          <input type="text" id="nuevo2" required />
+        </div>
+        <button type="submit" class="btn">Reemplazar 2 elementos</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ejercicio 13: sort()</title>
+  <link rel="stylesheet" href="css.css">
+</head>
+<body>
+  <main class="contenedor">
+    <h1>Ejercicio 13: sort()</h1>
+
+    <!-- 1) Números -->
+    <div class="campo">
+      <label>1. Ordena números de menor a mayor</label>
+      <input type="text" id="inNumbers" placeholder="Ej: 5,3,8,1">
+      <span class="error" id="err-numbers"></span>
+      <button id="btnSortNumbers" class="btn">Ordenar Números</button>
+      <div id="outNumbers" class="salida"></div>
+    </div>
+
+    <!-- 2) Palabras -->
+    <div class="campo">
+      <label>2. Ordena palabras alfabéticamente</label>
+      <input type="text" id="inWords" placeholder="Ej: perro,gato,Águila,elefante">
+      <span class="error" id="err-words"></span>
+      <button id="btnSortWords" class="btn">Ordenar Palabras</button>
+      <div id="outWords" class="salida"></div>
+    </div>
+
+    <!-- 3) Objetos -->
+    <div class="campo">
+      <label>3. Objetos {nombre, edad} ordenados por edad</label>
+      <button id="btnSortPeople" class="btn">Ordenar Personas</button>
+      <div id="outPeople" class="salida"></div>
+    </div>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

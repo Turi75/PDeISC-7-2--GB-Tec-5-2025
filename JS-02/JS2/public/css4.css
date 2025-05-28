@@ -1,0 +1,341 @@
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    margin: 0;
+    padding-top: 60px; /* Altura de la navbar */
+    background-color: #0A192F;
+    color: #E2E8F0;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 60px);
+    align-items: center;
+}
+
+/* === NAVBAR STYLES (Menú Superior Siempre Visible) === */
+.navbar {
+    background-color: #0D2A4C;
+    color: white;
+    padding: 0 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.nav-logo,
+.logout-button {
+    box-sizing: border-box;
+}
+
+.nav-logo {
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #60A5FA;
+    flex-shrink: 0;
+}
+
+/* CAMBIO: Ocultamos el botón de hamburguesa ya que no será necesario */
+.nav-toggle {
+    display: none; 
+}
+
+/* CAMBIO: Hacemos que la lista de enlaces sea siempre visible y horizontal */
+.nav-links {
+    display: flex; /* Hacemos que sea visible por defecto */
+    flex-direction: row; /* La alineamos horizontalmente */
+    align-items: center; /* Centramos los ítems verticalmente */
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 5px; /* Añadimos un pequeño espacio entre elementos */
+}
+
+/* CAMBIO: Ajustamos los ítems de la lista para un layout horizontal */
+.nav-links li {
+    margin: 0;
+    width: auto; /* Dejamos que el ancho sea automático */
+}
+
+/* CAMBIO: Ajustamos los estilos de los enlaces para el nuevo layout */
+.nav-links li a,
+.nav-user-greeting-item {
+    color: #CBD5E0;
+    text-decoration: none;
+    font-size: 0.9em; /* Ligeramente más pequeño para que quepa mejor */
+    padding: 8px 12px; /* Ajustamos el padding */
+    border-bottom: none; /* Quitamos el borde inferior */
+    display: inline-block; /* Cambiamos a inline-block */
+    transition: background-color 0.2s ease;
+    border-radius: 4px; /* Añadimos bordes redondeados para mejor estética */
+}
+
+.nav-links li a:hover,
+.nav-user-greeting-item:hover {
+    background-color: #1E40AF;
+    color: white;
+}
+.nav-links li a.active-link {
+    background-color: #2563EB;
+    color: white;
+    font-weight: 500;
+}
+
+.nav-user-greeting-item {
+    max-width: 150px; /* Limitamos el ancho del saludo */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #A0AEC0;
+}
+
+.nav-user-logout-item {
+    padding: 0; /* Quitamos el padding del LI */
+    margin-left: 10px; /* Añadimos margen a la izquierda */
+}
+.nav-user-logout-item .logout-button {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+    width: auto; /* Ancho automático */
+}
+.nav-user-logout-item .logout-button:hover {
+    background-color: #1D4ED8;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Se eliminan las reglas para .nav-toggle.open y .nav-links.open ya que no son necesarias */
+
+@media (max-width: 768px) {
+    /* En pantallas más pequeñas, reducimos el tamaño de la fuente para que quepa el menú */
+    .nav-logo {
+        font-size: 1.4em;
+    }
+    .nav-links li a,
+    .nav-user-greeting-item,
+    .nav-user-logout-item .logout-button {
+        font-size: 0.8em;
+        padding: 6px 8px;
+    }
+}
+
+
+/* === ESTILOS DEL JUEGO TaTeTi (SIN CAMBIOS) === */
+.page-content-tateti {
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.contenedor-tateti {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    width: 90%;
+    max-width: 900px;
+}
+
+.lado-tateti {
+    background: #1E293B;
+    border-radius: 12px;
+    padding: 25px 30px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    transition: transform .3s, box-shadow .3s;
+    flex: 1;
+}
+
+.lado-form-tateti h1,
+#area-juego-tateti h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #93C5FD;
+    font-weight: 500;
+}
+#area-juego-tateti h2 {
+    margin-top: 0;
+}
+
+.campo-form-tateti {
+    margin-bottom: 20px;
+}
+
+.campo-form-tateti label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #A0AEC0;
+}
+
+.campo-form-tateti input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #334155;
+    background-color: #0F172A;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #E2E8F0;
+}
+.campo-form-tateti input[type="text"]::placeholder {
+    color: #4A5568;
+}
+.campo-form-tateti input[type="text"]:focus {
+    outline: none;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+.radio-group-tateti {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+}
+.radio-group-tateti label {
+    font-weight: 400;
+    color: #A0AEC0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+.radio-group-tateti input[type="radio"] {
+    margin-right: 8px;
+    accent-color: #2563EB;
+}
+
+.btn-tateti {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background-color .3s, transform 0.2s;
+    text-align: center;
+    display: inline-block;
+    text-decoration: none;
+}
+.btn-tateti:hover {
+    transform: translateY(-2px);
+}
+
+.btn-principal-tateti {
+    background-color: #2563EB;
+    color: white;
+}
+.btn-principal-tateti:hover {
+    background-color: #1D4ED8;
+}
+
+.btn-secundario-tateti {
+    background-color: #374151;
+    color: #E2E8F0;
+}
+.btn-secundario-tateti:hover {
+    background-color: #4B5563;
+}
+
+.btn-terciario-tateti {
+    background-color: transparent;
+    color: #60A5FA;
+    border: 1px solid #60A5FA;
+}
+.btn-terciario-tateti:hover {
+    background-color: rgba(96, 165, 250, 0.1);
+}
+
+.area-juego-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tablero-tateti {
+    display: grid;
+    grid-template-columns: repeat(3, clamp(80px, 20vw, 110px));
+    grid-template-rows: repeat(3, clamp(80px, 20vw, 110px));
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.celda-tateti {
+    background-color: #334155;
+    font-size: clamp(2rem, 10vw, 3.5rem);
+    font-weight: bold;
+    color: #93C5FD;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+.celda-tateti:hover {
+    background-color: #4B5563;
+}
+.celda-tateti.jugador-x {
+    color: #FDBA74;
+}
+.celda-tateti.jugador-o {
+    color: #A5B4FC;
+}
+
+.controles-juego-tateti {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 350px;
+    margin-bottom: 15px;
+}
+
+.msg-resultado-tateti {
+    text-align: center;
+    color: #6EE7B7;
+    font-weight: 500;
+    margin-top: 15px;
+    font-size: 1.1rem;
+    min-height: 1.5em;
+}
+.msg-resultado-tateti.visible {
+    display: block;
+}
+
+@media (max-width: 480px) {
+    .lado-tateti {
+        padding: 15px;
+    }
+    .campo-form-tateti input[type="text"],
+    .btn-tateti {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    .tablero-tateti {
+        gap: 6px;
+    }
+}

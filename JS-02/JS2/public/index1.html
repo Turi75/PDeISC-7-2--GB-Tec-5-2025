@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Mis Juegos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css1.css">
+</head>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="nav-logo">Mis Juegos</div>
+    <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+    <ul class="nav-links">
+        <li><a href="index1.html" class="active-link">Inicio</a></li>
+        <li><a href="index2.html">Simón Dice</a></li>
+        <li><a href="index3.html">PPT Hacker</a></li>
+        <li><a href="index4.html">TaTeTi</a></li>
+        <li class="logout-menu-item hidden">
+            <a href="#" id="logoutMenuLink" role="button">Cambiar Usuario</a>
+        </li>
+    </ul>
+    <div class="nav-user-area">
+        <span id="saludoUsuarioNav"></span>
+        <button id="logoutDesktopBtn" class="logout-button hidden">Cambiar Usuario</button>
+    </div>
+</nav>
+
+    <div class="main-container">
+        <h1>¡Bienvenido/a al Portal de Juegos!</h1>
+
+        <div id="entradaNombreContainer">
+            <p>Por favor, ingresa tu nombre para continuar:</p>
+            <input type="text" id="nombreUsuarioInput" placeholder="Tu nombre aquí">
+            <button id="guardarNombreBtn">Guardar y Empezar</button>
+            <p id="mensajeError" class="error"></p>
+        </div>
+
+        <div id="seleccionJuegosContainer" class="hidden">
+            <h2>Hola <span id="nombreUsuarioDisplay"></span>, elige un juego:</h2>
+            <div class="botones-juegos">
+                <a href="index2.html" class="boton-juego">Jugar Simón Dice</a>
+                <a href="index3.html" class="boton-juego">Jugar PPT Hacker</a>
+                <a href="index4.html" class="boton-juego">Jugar TaTeTi</a> 
+            </div>
+        </div>
+    </div>
+
+    <script src="script1.js"></script>
+</body>
+</html>

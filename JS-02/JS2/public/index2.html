@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simón Dice - Mis Juegos</title>
+    <link rel="stylesheet" href="css2.css"> </head>
+<body>
+    <nav class="navbar">
+    <div class="nav-logo">Mis Juegos</div>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle-checkbox">
+    <label for="nav-toggle" class="nav-toggle-label">
+        <span></span>
+    </label>
+
+    <div class="nav-menu-content">
+        <ul class="nav-links">
+            <li><a href="index1.html">Inicio</a></li>
+            <li><a href="index2.html" class="active-link">Simón Dice</a></li>
+            <li><a href="index3.html">PPT Hacker</a></li>
+            <li><a href="index4.html">Juego 3</a></li>
+        </ul>
+        <div id="saludoUsuarioNav" class="nav-user">
+            </div>
+        <button id="logoutBtn" class="nav-logout-button hidden">Cambiar Usuario</button>
+        </div>
+</nav>
+
+    <div class="page-content"> <div class="game-container-simon">
+            <div id="welcome-message-simon" class="welcome-simon"></div>
+            <div id="simon-game">
+                <div id="game-title-center">SIMÓN</div>
+                <div class="simon-button" id="green" data-color-index="0"></div>
+                <div class="simon-button" id="red" data-color-index="1"></div>
+                <div class="simon-button" id="yellow" data-color-index="2"></div>
+                <div class="simon-button" id="blue" data-color-index="3"></div>
+            </div>
+            <div id="control-panel-simon">
+                <div class="status-display-simon">
+                    NIVEL: <span id="level-display-simon">0</span>
+                </div>
+                <button id="start-button-simon">Iniciar Juego</button>
+                <div id="message-display-simon">Presiona "Iniciar Juego"</div>
+                <div id="error-details-display-simon" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script1.js"></script> <script src="script2.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPT - Mis Juegos</title>
+    <link rel="stylesheet" href="css3.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-logo">Mis Juegos</div>
+        <ul class="nav-links">
+            <li><a href="index1.html">Inicio</a></li>
+            <li><a href="index2.html">Simón Dice</a></li>
+            <li><a href="index3.html" class="active-link">PPT Hacker</a></li>
+            <li><a href="index4.html">Tateti</a></li>
+            <li><a href="#" id="cambiarUsuarioBtnNav">Cambiar Usuario</a></li> {/* */}
+        </ul>
+        <div class="nav-user-section">
+            <div id="saludoUsuarioNav" class="nav-user"></div>
+            <button class="nav-toggle" aria-label="Abrir menú" aria-expanded="false">
+                <span class="hamburger-icon line1"></span>
+                <span class="hamburger-icon line2"></span>
+                <span class="hamburger-icon line3"></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-content-ppt">
+        <div class="container-ppt">
+            <div id="startScreenPpt" class="active-ppt">
+                <h1 class="main-title-ppt">PIEDRA, PAPEL O TIJERAS</h1>
+                <p id="saludoGlobalPpt" class="saludo-ppt"></p>
+                <div id="nameEntrySectionPpt">
+                    <h2 class="sub-title-ppt">Seleccionar Modo de Juego</h2>
+                    <div class="mode-selection-buttons-ppt">
+                        <button id="selectVsPlayerBtnPpt" class="mode-btn-hacker-ppt">Humano vs Humano</button>
+                        <button id="selectVsComputerBtnPpt" class="mode-btn-hacker-ppt">Humano vs IA</button>
+                    </div>
+                    <div id="playerNamesFormPpt" class="hidden-ppt">
+                        <div id="player2NameInputContainerPpt" class="hidden-ppt">
+                            <label for="player2NameInputPpt">Nombre Jugador 2:</label>
+                            <input type="text" id="player2NameInputPpt" class="hacker-input-ppt" placeholder="Escribe aquí Jugador 2">
+                        </div>
+                        <button id="startGameWithNameBtnPpt" class="hacker-btn-ppt main-action-btn-ppt">Iniciar Juego</button>
+                    </div>
+                </div>
+            </div>
+
+            <main id="gameContainerPpt" class="hidden-ppt">
+                <header class="game-header-ppt">
+                    <h1 class="main-title-small-ppt">Partida en Curso</h1>
+                    <div class="timer-section-ppt">
+                        <p>Tiempo restante: <span id="timerDisplayPpt">10</span>s</p>
+                    </div>
+                </header>
+                <div class="game-board-ppt">
+                    <div class="player-panel-ppt" id="player1PanelPpt">
+                        <h2 id="player1NameDisplayPpt" class="player-title-hacker-ppt">Jugador 1</h2>
+                        <div class="choices-ppt">
+                            <button class="choice-btn-ppt player1-choice-ppt" data-choice="PIEDRA">✊</button>
+                            <button class="choice-btn-ppt player1-choice-ppt" data-choice="PAPEL">✋</button>
+                            <button class="choice-btn-ppt player1-choice-ppt" data-choice="TIJERAS">✌️</button>
+                        </div>
+                        <p class="chosen-display-ppt" id="player1ChoiceDisplayPpt">Esperando elección...</p>
+                        <p class="keyboard-hint-ppt">(Teclas: A, S, D)</p>
+                    </div>
+                    <div class="results-display-area-ppt">
+                        <p id="roundResultPpt" class="result-text-ppt">Resultado de la Ronda</p>
+                        <p id="turnIndicatorPpt" class="hidden-ppt turn-text-ppt"></p>
+                    </div>
+                    <div class="player-panel-ppt" id="player2PanelPpt">
+                        <h2 id="player2NameDisplayPpt" class="player-title-hacker-ppt">Jugador 2</h2>
+                        <div class="choices-ppt" id="player2ChoicesPpt">
+                            <button class="choice-btn-ppt player2-choice-ppt" data-choice="PIEDRA">✊</button>
+                            <button class="choice-btn-ppt player2-choice-ppt" data-choice="PAPEL">✋</button>
+                            <button class="choice-btn-ppt player2-choice-ppt" data-choice="TIJERAS">✌️</button>
+                        </div>
+                        <p class="chosen-display-ppt" id="player2ChoiceDisplayPpt">Esperando elección...</p>
+                        <p class="keyboard-hint-ppt" id="player2KeyboardHintPpt">(Teclas: 4, 5, 6)</p>
+                    </div>
+                    <div class="computer-panel-ppt hidden-ppt" id="computerPanelPpt">
+                        <h2 class="player-title-hacker-ppt">IA Adversaria</h2>
+                        <div class="computer-choice-display-area-ppt">
+                            <p id="computerChoiceDisplayPpt">?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="score-board-hacker-ppt">
+                    <h3 class="score-title-ppt">Marcador</h3>
+                    <p id="player1ScorePpt" class="score-line-ppt"><span>Jugador 1</span>: 0</p>
+                    <p id="player2ScorePpt" class="score-line-ppt"><span>Jugador 2</span>: 0</p>
+                    <p id="tiesPpt" class="score-line-ppt"><span>Empates</span>: 0</p>
+                </div>
+                <div id="finalScoreDisplayPpt" class="hidden-ppt final-scores-ppt">
+                    <h2 class="sub-title-ppt">Puntajes Finales</h2>
+                    <p id="finalPlayer1ScorePpt"><span>Jugador 1</span>: 0</p>
+                    <p id="finalPlayer2ScorePpt"><span>Jugador 2</span>: 0</p>
+                    <p id="finalTiesPpt"><span>Empates</span>: 0</p>
+                    <p id="winnerMessagePpt" class="winner-message-text-ppt"></p>
+                </div>
+                <div class="game-controls-ppt">
+                    <button id="nextRoundBtnPpt" class="hacker-btn-ppt control-btn-ppt hidden-ppt">Siguiente Ronda</button>
+                    <button id="revealBtnPVPPpt" class="hacker-btn-ppt control-btn-ppt hidden-ppt">Mostrar Jugadas</button>
+                    <button id="endGameBtnPpt" class="hacker-btn-ppt control-btn-ppt">Finalizar Partida</button>
+                    <button id="resetGameBtnPpt" class="hacker-btn-ppt control-btn-ppt hidden-ppt">Reiniciar Partida</button>
+                    <button id="changeModeBtnPpt" class="hacker-btn-ppt control-btn-ppt">Cambiar Modo</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="script1.js"></script>
+    <script src="script3.js"></script>
+</body>
+</html>

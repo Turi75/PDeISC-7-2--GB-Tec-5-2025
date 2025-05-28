@@ -1,0 +1,358 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding-top: var(--navbar-height, 70px);
+    background-color: var(--theme-color-body-bg, #F4F7F9);
+    color: var(--theme-color-text-on-light, #333333);
+    line-height: 1.6;
+}
+
+:root {
+    --theme-color-navbar-bg: #1A3A6D; /* NUEVO COLOR SEGÚN TU ESPECIFICACIÓN */
+    --theme-color-navbar-text: #FFFFFF;
+    --theme-color-navbar-hover-bg: #2c5499; /* Un hover un poco más claro para el nuevo fondo */
+    --theme-color-navbar-active-link-bg: #A0D2DB; 
+    --theme-color-navbar-active-link-text: #1A3A6D; /* Texto oscuro para el fondo celeste, usando el nuevo azul */
+    --theme-color-button-primary-bg: #007BFF;
+    --theme-color-button-primary-text: #FFFFFF;
+    --theme-color-button-primary-hover-bg: #0056b3;
+    --theme-color-text-on-light: #333333;
+    --theme-color-text-on-dark: #FFFFFF;
+    --theme-color-text-link: #007BFF;
+    --theme-color-title: #2C3E50;
+    --theme-color-body-bg: #F4F7F9;
+    --theme-color-card-bg: #FFFFFF;
+    --theme-color-border: #DEE2E6;
+    --theme-color-input-bg: #FFFFFF;
+    --theme-color-input-border: #CED4DA;
+    --theme-color-input-focus-border: #80BDFF;
+    --theme-color-input-focus-shadow: rgba(0, 123, 255, 0.25);
+    --font-primary: 'Arial', sans-serif;
+    --font-display: 'Arial', sans-serif;
+    --transition-speed-ppt: 0.2s;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --navbar-height: 60px;
+}
+
+.navbar {
+    background-color: var(--theme-color-navbar-bg);
+    color: var(--theme-color-navbar-text);
+    padding: 0 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    height: var(--navbar-height);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    box-sizing: border-box;
+}
+
+.nav-logo {
+    font-size: 1.8em; 
+    font-weight: bold;
+    color: var(--theme-color-navbar-text);
+    flex-shrink: 0;
+    margin-right: 25px; 
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex; 
+    align-items: center;
+    flex-shrink: 1; 
+    overflow: hidden; 
+}
+
+.nav-links li {
+    margin-right: 5px; 
+}
+.nav-links li:last-child {
+    margin-right: 0;
+}
+
+.nav-links a {
+    color: var(--theme-color-navbar-text);
+    text-decoration: none;
+    font-size: 0.95em;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+}
+
+.nav-links a:hover {
+    background-color: var(--theme-color-navbar-hover-bg);
+}
+
+.nav-links a.active-link {
+    background-color: var(--theme-color-navbar-active-link-bg);
+    color: var(--theme-color-navbar-active-link-text);
+    font-weight: 500;
+}
+
+.nav-user-section {
+    display: flex;
+    align-items: center;
+    margin-left: auto; 
+    flex-shrink: 0;
+    /* padding-left: 15px; No es necesario si los links tienen suficiente margen */
+}
+
+.nav-user {
+    font-size: 0.9em;
+    color: var(--theme-color-navbar-text);
+    white-space: nowrap;
+    margin-right: 10px; /* Espacio reducido entre saludo y hamburguesa */
+}
+
+.nav-toggle {
+    display: none; 
+    background: none;
+    border: none;
+    color: var(--theme-color-navbar-text);
+    cursor: pointer;
+    padding: 5px; 
+    width: 35px;
+    height: 35px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.hamburger-icon {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: var(--theme-color-navbar-text);
+    margin: 3px 0;
+    transition: all 0.3s ease-in-out;
+    border-radius: 1px;
+}
+.navbar.nav-open .hamburger-icon.line1 { transform: translateY(5px) rotate(45deg); }
+.navbar.nav-open .hamburger-icon.line2 { opacity: 0; }
+.navbar.nav-open .hamburger-icon.line3 { transform: translateY(-5px) rotate(-45deg); }
+
+
+/* --- Estilos del contenido de la página PPT (sin cambios respecto a la última versión) --- */
+.page-content-ppt { padding: 0; margin: 0; }
+.container-ppt {
+    font-family: var(--font-primary); background-color: var(--theme-color-card-bg);
+    color: var(--theme-color-text-on-light); padding: 30px 25px;
+    border-radius: 8px; width: 90%; max-width: 1000px; text-align: center;
+    position: relative; z-index: 1; margin: 20px auto;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); border: 1px solid var(--theme-color-border);
+}
+.main-title-ppt, .main-title-small-ppt {
+    font-family: var(--font-display); color: var(--theme-color-title);
+    margin-bottom: 25px; letter-spacing: 0.5px; font-weight: bold;
+}
+.main-title-ppt { font-size: 2.2em; } .main-title-small-ppt { font-size: 1.8em; }
+.sub-title-ppt {
+    font-family: var(--font-display); font-size: 1.5em; margin-bottom: 20px;
+    color: var(--theme-color-title); letter-spacing: 0.5px; font-weight: normal;
+}
+.player-title-hacker-ppt {
+    font-family: var(--font-display); font-size: 1.3em; margin-bottom: 15px;
+    color: var(--theme-color-text-on-light); font-weight: bold;
+}
+.saludo-ppt { color: var(--theme-color-text-link); font-size: 1.1em; margin-bottom: 15px; }
+#nameEntrySectionPpt label {
+    display: block; margin: 15px 0 8px 0; font-size: 1em;
+    color: var(--theme-color-text-on-light); text-align: left;
+    max-width: 350px; margin-left: auto; margin-right: auto;
+}
+.hacker-input-ppt {
+    background-color: var(--theme-color-input-bg); border: 1px solid var(--theme-color-input-border);
+    color: var(--theme-color-text-on-light); padding: 10px 12px;
+    font-family: var(--font-primary); font-size: 0.95em; width: calc(100% - 26px);
+    max-width: 350px; margin-bottom: 15px; border-radius: 4px;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    transition: border-color var(--transition-speed-ppt) ease, box-shadow var(--transition-speed-ppt) ease;
+}
+.hacker-input-ppt::placeholder { color: #6c757d; opacity: 1; }
+.hacker-input-ppt:focus {
+    border-color: var(--theme-color-input-focus-border);
+    box-shadow: 0 0 0 0.2rem var(--theme-color-input-focus-shadow); outline: none;
+}
+.mode-btn-hacker-ppt, .hacker-btn-ppt {
+    background-color: var(--theme-color-button-primary-bg); border: 1px solid var(--theme-color-button-primary-bg);
+    color: var(--theme-color-button-primary-text); padding: 10px 18px; margin: 8px 5px;
+    font-family: var(--font-primary); font-size: 0.95em; cursor: pointer;
+    transition: all var(--transition-speed-ppt) ease-in-out; text-transform: none;
+    border-radius: 4px; letter-spacing: 0.5px;
+}
+.mode-btn-hacker-ppt:hover, .hacker-btn-ppt:hover {
+    background-color: var(--theme-color-button-primary-hover-bg);
+    border-color: var(--theme-color-button-primary-hover-bg);
+}
+.main-action-btn-ppt { font-weight: bold; padding: 10px 25px; font-size: 1em; margin-top: 20px; }
+.choice-btn-ppt {
+    display: flex; align-items: center; justify-content: center; width: 100%;
+    margin: 10px 0; padding: 10px; font-family: var(--font-primary);
+    font-size: 2em; line-height: 1; cursor: pointer;
+    transition: all var(--transition-speed-ppt) ease-in-out; border-radius: 4px; position: relative;
+    background-color: var(--theme-color-card-bg); color: var(--theme-color-button-primary-bg);
+    border: 2px solid var(--theme-color-button-primary-bg);
+}
+.choice-btn-ppt:hover {
+    border-color: var(--theme-color-button-primary-hover-bg);
+    color: var(--theme-color-button-primary-hover-bg); background-color: #e9ecef;
+}
+.choice-btn-ppt.selected-ppt {
+    border-color: var(--theme-color-button-primary-hover-bg);
+    color: var(--theme-color-button-primary-text);
+    background-color: var(--theme-color-button-primary-bg);
+}
+.choice-btn-ppt:disabled {
+    border-color: #adb5bd !important; color: #adb5bd !important; cursor: not-allowed;
+    opacity: 0.65; background-color: var(--theme-color-card-bg) !important;
+}
+.timer-section-ppt { font-size: 1em; margin-bottom: 20px; color: var(--theme-color-text-on-light); }
+.timer-section-ppt span { color: var(--theme-color-button-primary-bg); font-weight: bold; }
+.game-board-ppt { display: flex; justify-content: space-around; align-items: flex-start; margin-bottom: 25px; gap: 20px; }
+.player-panel-ppt, .computer-panel-ppt {
+    flex-basis: 32%; padding: 20px; border: 1px solid var(--theme-color-border);
+    background-color: var(--theme-color-body-bg); border-radius: 6px;
+}
+.chosen-display-ppt { margin-top: 15px; font-size: 1.1em; min-height: 25px; font-family: var(--font-primary); color: var(--theme-color-text-on-light); font-weight: 500; }
+.keyboard-hint-ppt { font-size: 0.8em; color: #6c757d; margin-top: 10px; opacity: 0.8; }
+.results-display-area-ppt { flex-basis: 30%; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 120px; }
+.result-text-ppt {
+    font-size: 1em; padding: 10px; margin-bottom: 10px; width: 100%;
+    box-sizing: border-box; border: 1px solid var(--theme-color-border);
+    border-radius: 4px; color: var(--theme-color-text-on-light);
+    background-color: var(--theme-color-card-bg);
+}
+.result-text-ppt.win-ppt { border-color: var(--success-color); color: var(--success-color); background-color: #e6f7ec; }
+.result-text-ppt.lose-ppt { border-color: var(--danger-color); color: var(--danger-color); background-color: #fbe9e7; }
+.result-text-ppt.tie-ppt { border-color: var(--warning-color); color: #545b62; background-color: #fff9e6; }
+.turn-text-ppt { font-size: 0.9em; font-style: italic; color: var(--theme-color-text-link); }
+.computer-choice-display-area-ppt p {
+    font-size: 2.5em; padding: 15px; background-color: var(--theme-color-card-bg);
+    border-radius: 50%; width: 60px; height: 60px; display: flex;
+    justify-content: center; align-items: center; margin: 15px auto;
+    border: 2px solid var(--theme-color-button-primary-bg); color: var(--theme-color-button-primary-bg);
+    font-family: var(--font-primary);
+}
+.score-board-hacker-ppt { margin: 25px 0; padding: 15px; border: 1px solid var(--theme-color-border); border-radius: 6px; background-color: var(--theme-color-body-bg); }
+.score-title-ppt { font-family: var(--font-display); font-size: 1.2em; margin-bottom: 10px; color: var(--theme-color-title); font-weight: bold; }
+.score-line-ppt { margin: 5px 0; font-size: 0.95em; color: var(--theme-color-text-on-light); }
+.score-line-ppt span { font-weight: bold; }
+.final-scores-ppt { margin-top: 30px; padding: 20px; border: 1px solid var(--theme-color-button-primary-bg); border-radius: 6px; background-color: var(--theme-color-card-bg); }
+.final-scores-ppt .sub-title-ppt { color: var(--theme-color-title); }
+.final-scores-ppt p { font-size: 1em; margin: 8px 0; color: var(--theme-color-text-on-light); }
+.final-scores-ppt p span { font-weight: bold; }
+.winner-message-text-ppt { font-size: 1.2em; font-weight: bold; margin-top: 15px; color: var(--theme-color-button-primary-bg); font-family: var(--font-display); }
+.game-controls-ppt { margin-top: 25px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.hidden-ppt { display: none !important; }
+#startScreenPpt.active-ppt, #gameContainerPpt.active-ppt { display: block; }
+.player-panel-ppt.inactive-turn-ppt { opacity: 0.6; }
+.player-panel-ppt.inactive-turn-ppt .choices-ppt button { cursor: not-allowed; opacity: 0.7; }
+
+/* --- Media Queries para Responsividad --- */
+@media (max-width: 820px) { /* Breakpoint para móvil/tablet */
+    .navbar {
+        justify-content: space-between; 
+        padding: 0 15px; /* Un poco menos de padding en los lados */
+    }
+    .nav-logo {
+        margin-right: 0; 
+        font-size: 1.4em; /* REDUCIDO TAMAÑO DE FUENTE DEL LOGO */
+    }
+    .nav-links {
+        display: none; 
+        flex-direction: column; width: 100%; position: absolute;
+        top: var(--navbar-height); left: 0; background-color: var(--theme-color-navbar-bg);
+        padding: 0; box-shadow: 0 4px 5px rgba(0,0,0,0.1);
+        border-top: 1px solid var(--theme-color-navbar-hover-bg); z-index: 999;
+    }
+    .nav-links.active { display: flex; }
+    .nav-links li { margin: 0; width: 100%; text-align: left; }
+    .nav-links a {
+        display: block; padding: 12px 20px; width: 100%; box-sizing: border-box;
+        border-radius: 0; border-bottom: 1px solid var(--theme-color-navbar-hover-bg);
+    }
+    .nav-links li:last-child a { border-bottom: none; }
+
+    .nav-user-section {
+        margin-left: 0; 
+    }
+    .nav-user {
+        font-size: 0.8em; /* REDUCIDO TAMAÑO DE FUENTE DEL SALUDO */
+        margin-right: 8px; /* Espacio ajustado */
+    }
+    .nav-toggle {
+        display: flex; 
+        padding: 3px; /* Ajuste para área de toque */
+        width: 30px;   /* Ajuste de tamaño */
+        height: 30px;  /* Ajuste de tamaño */
+    }
+    .hamburger-icon { width: 20px; height: 2px; margin: 2.5px 0; } /* Icono más pequeño */
+    .navbar.nav-open .hamburger-icon.line1 { transform: translateY(4.5px) rotate(45deg); }
+    .navbar.nav-open .hamburger-icon.line3 { transform: translateY(-4.5px) rotate(-45deg); }
+
+    /* Contenido del juego ajustado para móvil */
+    .container-ppt { width: 95%; padding: 20px 15px; }
+    .main-title-ppt { font-size: 1.8em; }
+    .main-title-small-ppt { font-size: 1.5em; }
+    .sub-title-ppt { font-size: 1.3em; }
+    .game-board-ppt { flex-direction: column; align-items: stretch; gap: 15px; }
+    .player-panel-ppt, .computer-panel-ppt, .results-display-area-ppt {
+        flex-basis: auto; width: auto; margin-bottom: 15px; padding: 15px;
+    }
+    .player-title-hacker-ppt { font-size: 1.2em; }
+}
+
+@media (max-width: 480px) {
+    .navbar { padding: 0 10px; }
+    .nav-logo { font-size: 1.2em; } /* AÚN MÁS REDUCIDO EL LOGO */
+    .nav-user { font-size: 0.75em; } /* AÚN MÁS REDUCIDO EL SALUDO */
+    /* Tamaños de hamburguesa ya ajustados en el breakpoint anterior, podrían mantenerse o reducirse más si es necesario */
+
+    .container-ppt { padding: 15px 10px; margin: 15px auto; }
+    .main-title-ppt { font-size: 1.6em; }
+    .sub-title-ppt { font-size: 1.2em; }
+    .mode-selection-buttons-ppt, .game-controls-ppt { flex-direction: column; gap: 8px; }
+    .hacker-btn-ppt, .mode-btn-hacker-ppt { font-size: 0.9em; padding: 10px 12px; }
+    .choice-btn-ppt { font-size: 1.8em; padding: 8px; }
+    .chosen-display-ppt { font-size: 0.95em; }
+    .timer-section-ppt { font-size: 0.9em; }
+    .player-title-hacker-ppt { font-size: 1.1em; }
+}
+/* En css3.css */
+/* ... todos tus estilos anteriores ... */
+
+/* Estilos OPCIONALES para el botón/link "Cambiar Usuario" en la navbar (escritorio) */
+#cambiarUsuarioBtnNav {
+    /* tus estilos aquí si quieres */
+}
+
+#cambiarUsuarioBtnNav:hover {
+    /* tus estilos hover aquí si quieres */
+}
+
+/* ... otros estilos ... */
+
+@media (max-width: 820px) {
+    /* ... otros estilos responsivos que ya tengas para este breakpoint ... */
+
+    .nav-links.active #cambiarUsuarioBtnNav {
+        /* tus estilos para el botón en el menú móvil activo aquí si quieres */
+    }
+}
+
+/* ... o si no tienes un bloque @media (max-width: 820px) ya, puedes crear uno al final: */
+/*
+@media (max-width: 820px) {
+    .nav-links.active #cambiarUsuarioBtnNav {
+
+    }
+}
+*/

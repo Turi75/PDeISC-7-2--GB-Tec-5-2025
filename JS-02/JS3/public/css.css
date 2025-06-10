@@ -1,0 +1,118 @@
+/* RESET */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* FONDO GENERAL */
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #6e2594, #f07f13);
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* HEADER */
+header {
+  width: 100%;
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+header h1 {
+  text-align: center;
+  padding: 20px 0;
+  font-size: 2rem;
+  color: #6e2594;
+}
+
+/* CONTENIDO */
+.contenido {
+  flex: 1;
+  width: 100%;
+  max-width: 700px;
+  padding: 20px;
+}
+
+/* SECCIONES */
+.seccion {
+  background: rgba(255,255,255,0.9);
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.seccion h2 {
+  margin-bottom: 15px;
+  color: #f07f13;
+}
+
+/* CAMPOS INLINE */
+.campo-inline {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.campo-inline input[type="number"],
+.campo-inline input[type="file"] {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* BOTONES */
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 5px;
+  background: #6e2594;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s;
+}
+.btn:hover {
+  background: #4b196d;
+}
+.btn.secundaria {
+  background: #f07f13;
+}
+.btn.secundaria:hover {
+  background: #c56f00;
+}
+
+/* ERRORES */
+.error {
+  color: #c00;
+  font-size: 0.9rem;
+  align-self: center;
+  white-space: nowrap;
+}
+
+/* LISTA DE NÚMEROS */
+.lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.lista div {
+  background: #eee;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* BLOQUE RESUMEN */
+.resumen {
+  background: #f9f9f9;
+  padding: 12px;
+  border-left: 5px solid #6e2594;
+  margin-bottom: 12px;
+}
+.resumen p {
+  margin-bottom: 6px;
+  font-weight: 600;
+}

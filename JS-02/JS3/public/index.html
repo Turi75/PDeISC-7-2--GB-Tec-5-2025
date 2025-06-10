@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Gestor de Números</title>
+  <link rel="stylesheet" href="css.css"/>
+</head>
+<body>
+  <header>
+    <h1>Gestor de Números</h1>
+  </header>
+  <main class="contenido">
+    <!-- Sección 1 -->
+    <section class="seccion">
+      <h2>1) Ingreso de Números (10–20)</h2>
+      <div class="campo-inline">
+        <input type="number" id="entradaNumero" placeholder="Ingresa un número">
+        <button id="botonAgregar" class="btn">Agregar</button>
+        <span class="error" id="errorAgregar"></span>
+      </div>
+      <div id="listaNumeros" class="lista"></div>
+      <button id="botonDescargarOriginal" class="btn secundaria" style="display:none">
+        Descargar TXT Original
+      </button>
+    </section>
+
+    <!-- Sección 2 -->
+    <section class="seccion">
+      <h2>2) Filtrado desde TXT</h2>
+      <div class="campo-inline">
+        <input type="file" id="entradaArchivo" accept=".txt">
+        <span class="error" id="errorArchivo"></span>
+      </div>
+      <button id="botonFiltrar" class="btn" style="display:none">Filtrar</button>
+      <div id="resumen" class="resumen" style="display:none">
+        <p>Útiles: <span id="cantUtiles"></span></p>
+        <p>No útiles: <span id="cantNoUtiles"></span></p>
+        <p>% Útiles: <span id="porcentajeUtiles"></span>%</p>
+      </div>
+      <div id="listaFiltrados" class="lista"></div>
+      <button id="botonDescargarFiltrados" class="btn secundaria" style="display:none">
+        Descargar TXT Filtrado
+      </button>
+    </section>
+  </main>
+</body>
+<script src="script.js"></script>
+</html>

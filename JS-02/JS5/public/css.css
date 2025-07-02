@@ -3,74 +3,77 @@
 
 /* FONDO Y TIPOGRAFÍA */
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #6e2594, #f07f13);
-  color: #222;
-  min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 20px;
+  font-family:'Segoe UI',sans-serif;
+  background: linear-gradient(135deg,#6e2594,#f07f13);
+  color:#222;
+  min-height:100vh;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
 
 /* HEADER */
 header h1 {
-  color: white; margin-bottom: 20px;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  color:white; margin-bottom:20px;
+  text-shadow:0 1px 3px rgba(0,0,0,0.5);
 }
 
-/* CONTENIDO PRINCIPAL */
+/* CONTENIDO */
 main {
-  width: 100%; max-width: 800px;
-  background: white; border-radius: 8px;
-  padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width:100%; max-width:800px;
+  background:white; border-radius:8px;
+  padding:20px; box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* SECCIONES */
-.seccion {
-  margin-bottom: 30px;
-}
-.seccion h2 {
-  color: #6e2594; margin-bottom: 12px;
-}
+.seccion { margin-bottom:30px; }
+.seccion h2 { color:#6e2594; margin-bottom:12px; }
 
-/* FORMULARIO INLINE */
+/* FORMULARIO */
 form {
-  display: flex; flex-wrap: wrap; gap: 10px;
+  display:flex; flex-wrap:wrap; gap:10px;
 }
 input, select {
-  padding: 8px; flex: 1 1 120px;
-  border: 2px solid #ccc; border-radius: 5px;
+  padding:8px; flex:1 1 120px;
+  border:2px solid #ccc; border-radius:5px;
 }
 .btn {
-  padding: 10px 16px; background: #6e2594; color: white;
-  border: none; border-radius: 5px; cursor: pointer;
-  transition: background .3s;
+  background:#6e2594; color:white;
+  border:none; border-radius:5px;
+  padding:10px 16px; cursor:pointer;
+  transition:background .3s;
 }
-.btn:hover { background: #4b196d; }
+.btn:hover { background:#4b196d; }
 .btn.secundaria {
-  background: #f07f13;
+  background:#f07f13;
 }
 .btn.secundaria:hover {
-  background: #c56f00;
+  background:#c56f00;
 }
-
-/* ERROR */
 .error {
-  display: block;
-  color: #c00; margin-top: 8px;
+  display:block; color:#c00; margin-top:8px;
 }
 
-/* VISTA EN PÁGINA */
+/* VISTA DE ANIMALES */
 #vistaAnimales table {
-  width: 100%; border-collapse: collapse; margin-top: 15px;
+  width:100%; border-collapse:collapse; margin-top:15px;
 }
 #vistaAnimales th, #vistaAnimales td {
-  border: 1px solid #aaa; padding: 8px; text-align: center;
+  border:1px solid #aaa; padding:8px; text-align:center;
 }
 #vistaAnimales th {
-  background: #eee;
+  background:#eee;
 }
-#vistaAnimales .detalle {
-  margin-top: 15px;
-  padding: 10px; background: #f9f9f9;
-  border-left: 4px solid #6e2594;
+
+/* CONDICIONES b, c, d */
+#condiciones {
+  margin-top:20px;
+  padding:10px;
+  background:#f9f9f9;
+  border-left:4px solid #6e2594;
+}
+#condiciones p {
+  margin-bottom:8px;
+  font-weight:600;
 }

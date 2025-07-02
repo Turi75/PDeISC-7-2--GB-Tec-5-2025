@@ -1,97 +1,93 @@
 // script.js
-// Gestiona la clase CZooAnimal, el formulario de ingreso y la visualización
+// Gestiona CZooAnimal en servidor, muestra tabla y condiciones b, c, d (todas las coincidencias en d)
 
-// 1) Definición de la clase CZooAnimal
-class CZooAnimal {
-    constructor(id, nombre, numeroJaula, tipoAnimal, peso) {
-      this.id = id;
-      this.nombre = nombre;
-      this.numeroJaula = numeroJaula;
-      this.tipoAnimal = tipoAnimal;
-      this.peso = peso;
-    }
+// 1) Referencias DOM
+const formulario      = document.getElementById('formAnimal');
+const errorAnimal     = document.getElementById('errorAnimal');
+const contenedorTabla = document.getElementById('vistaAnimales');
+const contenedorCond  = document.getElementById('condiciones');
+const botonDocWrite   = document.getElementById('btnDocumentWrite');
+
+// 2) Al enviar el formulario, hacemos POST a /api/animales
+formulario.addEventListener('submit', async e => {
+  e.preventDefault();
+  errorAnimal.textContent = '';
+
+  const id       = document.getElementById('entradaId').value;
+  const nombre   = document.getElementById('entradaNombre').value.trim();
+  const jaula    = document.getElementById('entradaJaula').value;
+  const tipo     = document.getElementById('entradaTipo').value;
+  const peso     = document.getElementById('entradaPeso').value;
+
+  if (!id || !nombre || !jaula || !tipo || !peso) {
+    errorAnimal.textContent = 'Todos los campos son obligatorios.';
+    return;
   }
-  
-  // 2) Variables y referencias al DOM
-  const formulario    = document.getElementById('formAnimal');
-  const errorAnimal   = document.getElementById('errorAnimal');
-  const botonMostrar  = document.getElementById('btnMostrar');
-  const vistaContenedor = document.getElementById('vistaAnimales');
-  
-  let listaAnimales = [];  // Aquí guardamos los 5 animales
-  
-  // 3) Evento "submit" del formulario: crea y almacena cada CZooAnimal
-  formulario.addEventListener('submit', e => {
-    e.preventDefault();
-    errorAnimal.textContent = '';
-  
-    // Leemos cada campo del formulario
-    const id       = parseInt(document.getElementById('entradaId').value);
-    const nombre   = document.getElementById('entradaNombre').value.trim();
-    const jaula    = parseInt(document.getElementById('entradaJaula').value);
-    const tipo     = parseInt(document.getElementById('entradaTipo').value);
-    const peso     = parseFloat(document.getElementById('entradaPeso').value);
-  
-    // Validaciones básicas
-    if (isNaN(id) || !nombre || isNaN(jaula) || isNaN(tipo) || isNaN(peso)) {
-      errorAnimal.textContent = 'Todos los campos son obligatorios y con valores válidos.';
-      return;
-    }
-  
-    // Agregamos el nuevo animal
-    const animal = new CZooAnimal(id, nombre, jaula, tipo, peso);
-    listaAnimales.push(animal);
-  
-    // Limpiamos formulario
-    formulario.reset();
-  
-    // Si ya tenemos 5 animales, habilitamos el botón de mostrar
-    if (listaAnimales.length === 5) {
-      botonMostrar.disabled = false;
-    }
-  });
-  
-  // 4) Al pulsar "Mostrar con document.write()"
-  botonMostrar.addEventListener('click', () => {
-    // a) document.write reemplaza el documento actual
-    document.write('<h1>Listado de Animales</h1>');
-  
-    // b) Lista simple de IDs y nombres
-    document.write('<ul>');
-    listaAnimales.forEach(a => {
-      document.write(`<li>ID ${a.id}: ${a.nombre}</li>`);
+
+  try {
+    const resp = await fetch('/api/animales', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ id, nombre, numeroJaula: jaula, tipoAnimal: tipo, peso })
     });
-    document.write('</ul>');
-  
-    // c) Detalle completo
-    listaAnimales.forEach(a => {
-      document.write(`<p><strong>${a.nombre}</strong> (ID ${a.id})<br>`);
-      document.write(`Jaula: ${a.numeroJaula}, Tipo: ${textoTipo(a.tipoAnimal)}, Peso: ${a.peso} kg</p>`);
-    });
-  
-    // d) Tabla final
-    document.write('<table>');
-    document.write('<thead><tr>'
-      + '<th>ID</th><th>Nombre</th><th>Jaula</th><th>Tipo</th><th>Peso</th>'
-      + '</tr></thead><tbody>');
-    listaAnimales.forEach(a => {
-      document.write('<tr>'
-        + `<td>${a.id}</td>`
-        + `<td>${a.nombre}</td>`
-        + `<td>${a.numeroJaula}</td>`
-        + `<td>${textoTipo(a.tipoAnimal)}</td>`
-        + `<td>${a.peso}</td>`
-        + '</tr>');
-    });
-    document.write('</tbody></table>');
-  });
-  
-  // 5) Función auxiliar para convertir el código de tipo a texto
-  function textoTipo(codigo) {
-    switch (codigo) {
-      case 1: return 'Felino';
-      case 2: return 'Ave';
-      case 3: return 'Reptil';
-      default: return 'Otro';
-    }
+    const lista = await resp.json();
+    mostrarTabla(lista);
+    mostrarCondiciones(lista);
+  } catch {
+    errorAnimal.textContent = 'Error al conectar con el servidor.';
   }
+});
+
+// 3) Dibuja la tabla HTML con todos los animales
+function mostrarTabla(animales) {
+  if (!animales.length) {
+    contenedorTabla.innerHTML = '<p>No hay animales.</p>';
+    return;
+  }
+  let html = '<table><thead><tr>'
+           + '<th>ID</th><th>Nombre</th><th>Jaula</th>'
+           + '<th>Tipo</th><th>Peso (kg)</th>'
+           + '</tr></thead><tbody>';
+  animales.forEach(a => {
+    html += `<tr>
+      <td>${a.id}</td>
+      <td>${a.nombre}</td>
+      <td>${a.numeroJaula}</td>
+      <td>${textoTipo(a.tipoAnimal)}</td>
+      <td>${a.peso}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  contenedorTabla.innerHTML = html;
+}
+
+// 4) Muestra las condiciones b, c y d (ahora d listado completo)
+function mostrarCondiciones(animales) {
+  // b) Jaula 5 y peso < 3kg
+  const condB = animales.filter(a => a.numeroJaula === 5 && a.peso < 3).length;
+  // c) Felinos (tipo=1) en jaulas 2 a 5
+  const condC = animales.filter(a => a.tipoAnimal === 1 && a.numeroJaula >= 2 && a.numeroJaula <= 5).length;
+  // d) **Todos** los nombres en jaula 4 con peso <120
+  const listaD = animales
+    .filter(a => a.numeroJaula === 4 && a.peso < 120)
+    .map(a => a.nombre);
+  const textoD = listaD.length ? listaD.join(', ') : 'Ninguno';
+
+  contenedorCond.innerHTML = `
+    <p>b) Cantidad en Jaula 5 con peso &lt; 3kg: <strong>${condB}</strong></p>
+    <p>c) Felinos en Jaulas 2–5: <strong>${condC}</strong></p>
+    <p>d) Nombre(s) en Jaula 4 con peso &lt;120kg: <strong>${textoD}</strong></p>
+  `;
+}
+
+// 5) Convierte código de tipo a texto
+function textoTipo(c) {
+  return { '1':'Felino','2':'Ave','3':'Reptil','4':'Otro' }[c] || 'Desconocido';
+}
+
+// 6) Botón para volcar todo con document.write()
+botonDocWrite.addEventListener('click', () => {
+  document.write('<h1>Animales (document.write)</h1>');
+  document.write(contenedorTabla.innerHTML);
+  document.write('<div>' + contenedorCond.innerHTML + '</div>');
+});

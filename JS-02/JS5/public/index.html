@@ -11,12 +11,13 @@
     <h1>Gestor de Animales del Zoológico</h1>
   </header>
   <main>
+    <!-- FORMULARIO -->
     <section class="seccion">
-      <h2>Agregar Animal (5 atributos)</h2>
+      <h2>Agregar Animal</h2>
       <form id="formAnimal">
-        <input type="number" id="entradaId" placeholder="ID Animal" required />
-        <input type="text"   id="entradaNombre" placeholder="Nombre" required />
-        <input type="number" id="entradaJaula" placeholder="N° Jaula" required />
+        <input type="number" id="entradaId"     placeholder="ID Animal"    required />
+        <input type="text"   id="entradaNombre" placeholder="Nombre"       required />
+        <input type="number" id="entradaJaula"  placeholder="N° Jaula"     required />
         <select id="entradaTipo" required>
           <option value="">Tipo de Animal</option>
           <option value="1">Felino</option>
@@ -30,12 +31,16 @@
       <span class="error" id="errorAnimal"></span>
     </section>
 
+    <!-- TABLA Y CONDICIONES -->
     <section class="seccion">
-      <h2>Mostrar Todos</h2>
-      <button id="btnMostrar" class="btn secundaria">
+      <h2>Listado de Animales</h2>
+      <div id="vistaAnimales"></div>
+      <div id="condiciones">
+        <!-- Aquí se mostrará b, c y d -->
+      </div>
+      <button id="btnDocumentWrite" class="btn secundaria">
         Mostrar con document.write()
       </button>
-      <div id="vistaAnimales"></div>
     </section>
   </main>
   <script src="script.js"></script>

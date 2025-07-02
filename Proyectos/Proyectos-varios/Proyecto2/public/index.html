@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Paginas</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body{
+            background-image: url(https://www.silverstone.co.uk/sites/default/files/images/Silverstone-2023-Web-Article-F1-Moto-Parts%20%281%29.png);
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;     
+        }
+        .box {
+             display: flex;
+             flex-direction: column;
+             align-items: center;  
+             width: 100%;
+             max-width: 600px;     
+             padding: 2rem;        
+         }
+        .boton{
+            transition: 0.1s ease-in-out;
+            color: white;
+            font-size: 3vw;
+            height: fit-content;
+            width: 30vw;
+            text-decoration: none;
+            align-self: center;
+            display: flex;
+            justify-content: center;
+            background: grey;
+            border: 2px solid rgb(186, 186, 186);
+            border-radius: 20px;
+            text-align: center;
+            margin: 2vw 0 2vw 0;
+        }
+        .boton:hover{
+        transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+    <a class="boton" href="pagina1.html">InFormula 1: Portal de noticias InFormula 1</a>
+    <a class="boton" href="pagina2.html">MotoMania: Portal de seguimiento y estadísticas de MotoGP.</a>
+    <a class="boton" href="pagina3.html">RallyRadar: justo lo que un fan espera de un sitio de noticias actualizado.</a>
+    </div>
+</body>
+</html>

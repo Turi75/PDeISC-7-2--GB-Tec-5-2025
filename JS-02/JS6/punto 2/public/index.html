@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Proyecto 2: Form POST</title>
+  <link rel="stylesheet" href="css.css"/>
+</head>
+<body>
+  <header><h1>Enviar Usuario (POST)</h1></header>
+  <main>
+    <form id="formFetch" class="formulario">
+      <input type="text"   id="entradaNombre" placeholder="Nombre" required/>
+      <input type="email"  id="entradaEmail"  placeholder="Email" required/>
+      <button type="submit" class="btn">Enviar con Fetch</button>
+    </form>
+    <form id="formAxios" class="formulario">
+      <input type="text"   id="entradaNombreA" placeholder="Nombre" required/>
+      <input type="email"  id="entradaEmailA"  placeholder="Email" required/>
+      <button type="submit" class="btn secundaria">Enviar con Axios</button>
+    </form>
+    <span class="error" id="errorEnvio"></span>
+    <div id="respuesta"></div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

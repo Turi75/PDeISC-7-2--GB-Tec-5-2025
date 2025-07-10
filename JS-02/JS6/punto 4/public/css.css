@@ -1,0 +1,43 @@
+/* css.css */
+* { margin:0; padding:0; box-sizing:border-box }
+body {
+  font-family:'Segoe UI',sans-serif;
+  background: linear-gradient(135deg, #6e2594, #f07f13);
+  color:#333;
+  min-height:100vh;
+  padding:20px;
+}
+header h1 {
+  color:#fff;
+  text-align:center;
+  margin-bottom:20px;
+}
+main {
+  max-width:800px;
+  margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+.btn {
+  background:#6e2594;
+  color:#fff;
+  padding:10px 16px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  transition:background .3s;
+  margin-bottom:15px;
+}
+.btn:hover { background:#4b196d }
+#contenedorAlumnos {
+  margin-top:10px;
+}
+.tarjeta-alumno {
+  background:#f9f9f9;
+  border-left:4px solid #f07f13;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:4px;
+}

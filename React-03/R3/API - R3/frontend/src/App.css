@@ -1,0 +1,141 @@
+/* esto es para que la página se vea bien de entrada en cualquier navegador. */
+body {
+  margin: 0; /* le saca los márgenes que traen los navegadores por defecto. */
+  /* acá le ponemos una lista de fuentes. va a intentar usar la primera, si no la tiene, la segunda, y así. */
+  /* son las fuentes típicas de sistemas apple, windows, etc. para que se vea "nativo". */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: #ffffff; /* fondo blanco para toda la página. */
+}
+
+.App {
+  text-align: center; /* centra el texto de los elementos hijos. */
+}
+
+.App-header {
+  background-color: #ffffff;
+  min-height: 100vh; /* hace que el contenedor ocupe como mínimo toda la altura de la pantalla. */
+  display: flex; /* activa flexbox, un sistema para alinear elementos fácilmente. */
+  flex-direction: column; /* apila los elementos uno arriba del otro. */
+  align-items: center; /* centra los elementos horizontalmente. */
+  color: black; /* color de texto principal negro. */
+  padding: 20px; /* un poco de espacio en los bordes para que no esté todo pegado. */
+  text-transform: lowercase; /* la regla que hace que todo se vea en minúscula. */
+}
+
+h1, h2 {
+  font-weight: 500; /* un grosor de letra intermedio, ni muy flaco ni muy negrita. */
+}
+
+/* --- estilo del formulario de alta --- */
+.user-form {
+  display: flex;
+  flex-wrap: wrap; /* si no entran en una línea, los elementos pasan para abajo. */
+  justify-content: center; /* centra el formulario. */
+  gap: 10px; /* espacio entre cada elemento del formulario. */
+  margin-bottom: 40px; /* un margen abajo para separarlo de la lista. */
+  width: 100%; /* que ocupe todo el ancho posible. */
+  max-width: 600px; /* pero como máximo 600px, para que no se estire demasiado en pantallas grandes. */
+  padding: 20px;
+  background-color: #f0f0f5; /* un gris muy clarito de fondo. */
+  border-radius: 20px; /* bordes súper redondeados. */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* permite que los inputs crezcan para ocupar el espacio disponible. */
+}
+
+.user-form input {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none; /* le sacamos el borde feo que traen por defecto. */
+  background-color: #e9e9eb;
+}
+
+.user-form button {
+  padding: 12px 25px;
+  font-size: 16px;
+  color: white;
+  background-color: #007aff; /* el azul de imessage. */
+  border: none;
+  border-radius: 20px;
+  cursor: pointer; /* para que el mouse se convierta en una manito. */
+  font-weight: bold;
+  align-self: flex-end; /* se alinea solo al final del contenedor flex. */
+  text-transform: lowercase;
+}
+
+.error-message {
+  color: #ff3b30; /* un rojo chillón para los errores */
+  font-size: 12px;
+  margin-top: 5px;
+  text-align: left;
+}
+
+/* --- estilo de la lista de usuarios --- */
+.user-list {
+  list-style: none; /* le saca los puntitos a la lista. */
+  padding: 0;
+  width: 100%;
+  max-width: 600px;
+}
+
+.user-item {
+  background-color: #f0f0f5; /* el mismo gris del formulario, para que parezca una burbuja de chat. */
+  padding: 15px;
+  margin-top: 10px;
+  border-radius: 20px;
+  display: flex;
+  justify-content: space-between; /* manda el texto a la izquierda y los botones a la derecha. */
+  align-items: center; /* centra verticalmente los elementos. */
+  text-align: left;
+  gap: 15px;
+}
+
+/* --- estilos para la edición en línea --- */
+.edit-form {
+  width: 100%; /* clave para que el formulario de edición ocupe todo el ancho y no se vaya para un costado. */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-input {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #007aff; /* un borde azul para que se note que estás editando. */
+  background-color: #ffffff;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px; /* espacio entre los botones de editar/borrar. */
+}
+
+.button-group button {
+  padding: 8px 15px;
+  font-size: 14px;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 500;
+  text-transform: lowercase;
+}
+
+/* colores específicos para cada botón, para que se entienda qué hace cada uno. */
+.edit-button { background-color: #8e8e93; } /* gris */
+.delete-button { background-color: #ff3b30; } /* rojo */
+.save-button { background-color: #34c759; } /* verde */
+.cancel-button { background-color: #8e8e93; } /* gris */
+
+
+/* estas reglas solo se aplican si la pantalla tiene 600px de ancho o menos. */
+@media (max-width: 600px) {
+  .user-form {
+    flex-direction: column; /* apila los inputs del formulario uno arriba del otro. */
+  }
+}

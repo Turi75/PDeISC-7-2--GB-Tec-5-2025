@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Space Invaders - Niveles & Puntajes</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main class="contenedor">
+      <header class="cabecera">
+        <h1>Space Invaders</h1>
+        <div class="info">
+          <span id="texto-jugador">Jugador: —</span>
+          <span id="texto-vidas">Vidas: 0</span>
+          <span id="texto-puntaje">Puntaje: 0</span>
+          <span id="texto-nivel">Nivel: 0</span>
+        </div>
+      </header>
+
+      <section class="juego-area">
+        <canvas id="pantalla" width="1400" height="900" tabindex="0"></canvas>
+
+        <aside class="panel-derecha">
+          <div class="panel">
+            <h3>Controles</h3>
+            <p>← → moverse · Barra Espaciadora disparar · P pausar</p>
+            <button id="btn-iniciar" disabled>Iniciar / Reiniciar</button>
+            <button id="btn-pausar" disabled>Pausar / Reanudar</button>
+          </div>
+
+          <div class="panel">
+            <h3>Enviar Puntaje</h3>
+            <p id="mensaje-estado" class="muted">Se guardará automáticamente al finalizar.</p>
+            <button id="btn-mostrar-guardar" disabled>Guardar ahora (si finalizó)</button>
+          </div>
+
+          <div class="panel">
+            <h3>Top mejores puntajes (por jugador)</h3>
+            <ol id="lista-mejores"></ol>
+            <button id="btn-refrescar">Refrescar Top</button>
+            <button id="btn-borrar-top">Borrar Top</button>
+          </div>
+        </aside>
+      </section>
+
+      <!-- Seccion que pide el nombre para poder comenzar a jugar -->
+      <div id="modal-nombre" class="modal">
+        <div class="modal-contenido">
+          <h2>Bienvenido</h2>
+          <p>Ingresa tu nombre para comenzar a jugar y guardar tu puntaje.</p>
+          <input id="input-nombre-modal" placeholder="Tu nombre" />
+          <div class="modal-botones">
+            <button id="btn-confirmar-nombre">Comenzar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección con todos los mejores puntajes abajo de todo -->
+      <section id="seccion-puntajes" class="seccion-puntajes">
+        <h3>Listado de mejores puntajes (por jugador)</h3>
+        <div id="tabla-mejores-wrapper"></div>
+      </section>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

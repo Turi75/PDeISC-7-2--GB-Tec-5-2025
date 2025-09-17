@@ -1,0 +1,99 @@
+:root{
+  --bg-gradient: linear-gradient(135deg,#141318 0%, #2b1b2f 100%);
+  --panel-dark: rgba(18,18,22,0.92);
+  --panel-light: #1f1b27;
+  --accent: #4b2fc1;
+  --accent-2: #8a66ff;
+  --muted: #a8a0b0;
+  --text: #eae6f2;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  min-height:100vh;
+  background: var(--bg-gradient);
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.contenedor{
+  max-width:1400px;
+  margin:30px auto;
+  padding:20px;
+}
+
+.cabecera{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:18px;
+}
+.cabecera h1{color:var(--accent-2); font-size:1.6rem}
+.info span{margin-left:12px;font-weight:600;color:var(--text)}
+
+.juego-area{
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap:20px;
+}
+
+canvas#pantalla{
+  background: radial-gradient(circle at 20% 20%, #061028 0%, #030414 60%);
+  width:100%;
+  height:auto;
+  display:block;
+  border-radius:10px;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.6);
+  border: 3px solid rgba(255,255,255,0.03);
+  outline:none;
+}
+
+.panel-derecha .panel{
+  background:var(--panel-dark);
+  padding:14px;
+  border-radius:10px;
+  margin-bottom:12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.panel-derecha h3{color:var(--accent-2);margin-bottom:8px}
+button{
+  display:inline-block;
+  background:var(--accent);
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+button:active{transform:translateY(2px)}
+button[disabled]{opacity:.45;cursor:not-allowed}
+input{padding:8px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text)}
+
+.pie{margin-top:18px;text-align:center;color:var(--muted);font-size:.9rem}
+
+/* Modal para pedir nombre */
+.modal{
+  position:fixed;left:0;top:0;right:0;bottom:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.6);z-index:9999;
+}
+.modal-contenido{
+  width:420px;background:var(--panel-dark);padding:22px;border-radius:12px;
+  box-shadow:0 12px 48px rgba(0,0,0,0.7);
+  text-align:center;
+}
+.modal-contenido h2{color:var(--accent-2);margin-bottom:8px}
+.modal-contenido p{color:var(--muted);margin-bottom:12px}
+.modal-botones{margin-top:12px}
+
+/* bottom section */
+.seccion-puntajes{margin-top:24px;background:rgba(255,255,255,0.03);padding:12px;border-radius:10px;color:var(--text)}
+#tabla-mejores-wrapper table{width:100%;border-collapse:collapse}
+#tabla-mejores-wrapper th, #tabla-mejores-wrapper td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03); text-align:left}
+
+/* estilos para ojos/colmillos en canvas (no CSS directo sobre canvas shapes) */

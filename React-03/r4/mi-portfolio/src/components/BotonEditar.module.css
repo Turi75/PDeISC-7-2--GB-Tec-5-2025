@@ -1,0 +1,20 @@
+/* src/components/BotonEditar.module.css */
+.editButton {
+  position: fixed; /* Lo deja flotando en la pantalla */
+  bottom: 2rem;
+  right: 2rem;
+  background-color: var(--bubble-blue);
+  color: var(--text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px; /* Píldora */
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  transition: all 0.2s ease-in-out;
+}
+
+.editButton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+}

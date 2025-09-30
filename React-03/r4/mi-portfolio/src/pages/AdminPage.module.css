@@ -1,0 +1,81 @@
+.nav {
+  margin: 2rem 0;
+  border-bottom: 1px solid #3a3a3c;
+  padding-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.navButton {
+  background-color: var(--bubble-gray);
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.navButton.active {
+  background-color: var(--bubble-blue);
+  color: var(--text-primary);
+}
+
+.form {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  align-items: center;
+}
+
+.input {
+  flex-grow: 1;
+  padding: 0.5rem 1rem;
+  background-color: #3a3a3c;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-primary);
+}
+
+.button {
+  background-color: var(--bubble-blue);
+  color: var(--text-primary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.itemList {
+  list-style: none;
+  margin-top: 2rem;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--bubble-gray);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+}
+
+.itemActions button {
+  margin-left: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.deleteButton:hover {
+  color: #ff453a; 
+}
+
+.editButton:hover {
+  color: var(--bubble-blue);
+}

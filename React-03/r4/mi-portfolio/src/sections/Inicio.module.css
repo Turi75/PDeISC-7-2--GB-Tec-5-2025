@@ -1,0 +1,20 @@
+/* src/components/Inicio.module.css */
+.inicio {
+  min-height: 70vh; /* Ocupa el 70% de la altura de la pantalla */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.titulo {
+  font-size: 3rem; 
+  font-weight: 800; 
+  margin-bottom: 0.5rem;
+}
+
+.subtitulo {
+  font-size: 1.25rem; 
+  color: var(--text-secondary); 
+}

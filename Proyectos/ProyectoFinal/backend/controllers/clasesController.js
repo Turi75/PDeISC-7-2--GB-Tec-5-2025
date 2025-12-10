@@ -1,41 +1,39 @@
 const { pool } = require('../config/database');
 
 /**
- * Generar clases automáticamente para la próxima semana
- * Se basa en los 'horarios_clase' activos.
+ * 1. Generar clases automáticamente para la próxima semana
  */
 exports.generarClasesSemanales = async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Mapeo manual para asegurar coincidencia con la DB (PostgreSQL)
+        // Mapeo de días para coincidir con PostgreSQL
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         
-        // Empezar desde hoy
         let fechaCursor = new Date();
         let clasesCreadas = 0;
+        const clasesDetalle = [];
 
         console.log("🔄 Iniciando generación de clases...");
 
         // Iterar los próximos 7 días
         for (let i = 0; i < 7; i++) {
             const diaIndice = fechaCursor.getDay();
-            const diaNombre = diasSemana[diaIndice]; // Ej: "Lunes"
-            const fechaSQL = fechaCursor.toISOString().split('T')[0]; // YYYY-MM-DD
+            const diaNombre = diasSemana[diaIndice];
+            const fechaSQL = fechaCursor.toISOString().split('T')[0];
 
-            // 1. Buscar horarios configurados para este día
+            // Buscar horarios activos para este día
             const horarios = await client.query(
-                `SELECT h.*, t.capacidad_maxima 
+                `SELECT h.*, t.capacidad_maxima, t.nombre as tipo_nombre 
                  FROM horarios_clase h
                  JOIN tipos_clase t ON h.tipo_clase_id = t.id
                  WHERE h.dia_semana = $1 AND h.activo = TRUE`,
                 [diaNombre]
             );
 
-            // 2. Insertar clases si no existen
             for (const horario of horarios.rows) {
-                // Verificar duplicados para no crear la misma clase dos veces
+                // Evitar duplicados
                 const existe = await client.query(
                     `SELECT id FROM clases 
                      WHERE fecha = $1 AND hora_inicio = $2 AND profesor_id = $3`,
@@ -43,10 +41,11 @@ exports.generarClasesSemanales = async (req, res) => {
                 );
 
                 if (existe.rows.length === 0) {
-                    await client.query(
+                    const nuevaClase = await client.query(
                         `INSERT INTO clases 
                         (tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales, cupos_disponibles, estado)
-                        VALUES ($1, $2, $3, $4, $5, $6, $6, 'programada')`,
+                        VALUES ($1, $2, $3, $4, $5, $6, $6, 'programada')
+                        RETURNING id`,
                         [
                             horario.tipo_clase_id,
                             horario.profesor_id,
@@ -57,10 +56,14 @@ exports.generarClasesSemanales = async (req, res) => {
                         ]
                     );
                     clasesCreadas++;
+                    clasesDetalle.push({
+                        id: nuevaClase.rows[0].id,
+                        fecha: fechaSQL,
+                        actividad: horario.tipo_nombre
+                    });
                 }
             }
-
-            // Avanzar un día en el cursor
+            // Avanzar un día
             fechaCursor.setDate(fechaCursor.getDate() + 1);
         }
 
@@ -70,7 +73,7 @@ exports.generarClasesSemanales = async (req, res) => {
         res.json({ 
             success: true, 
             message: `Proceso completado. Se crearon ${clasesCreadas} clases nuevas.`, 
-            clasesCreadas 
+            data: clasesDetalle
         });
 
     } catch (error) {
@@ -83,7 +86,7 @@ exports.generarClasesSemanales = async (req, res) => {
 };
 
 /**
- * Obtener todas las clases (público/usuarios)
+ * 2. Obtener todas las clases (público/usuarios)
  */
 exports.obtenerClases = async (req, res) => {
     try {
@@ -103,37 +106,64 @@ exports.obtenerClases = async (req, res) => {
 };
 
 /**
- * Inscribirse a una clase
+ * 3. Obtener Mis Clases (Inscripciones del usuario)
+ */
+exports.obtenerMisClases = async (req, res) => {
+    const usuario_id = req.user.id;
+    try {
+        const resultado = await pool.query(`
+            SELECT c.*, t.nombre as actividad, i.asistio 
+            FROM inscripciones i
+            JOIN clases c ON i.clase_id = c.id
+            JOIN tipos_clase t ON c.tipo_clase_id = t.id
+            WHERE i.usuario_id = $1
+            ORDER BY c.fecha DESC`, 
+            [usuario_id]
+        );
+        res.json({ success: true, data: resultado.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error al obtener mis clases" });
+    }
+};
+
+/**
+ * 4. Inscribirse a una clase
  */
 exports.inscribirseClase = async (req, res) => {
     const { clase_id } = req.body;
-    const usuario_id = req.user.id; // Asumiendo middleware de auth
+    
+    if (!req.user || !req.user.id) {
+        return res.status(401).json({ success: false, message: "Usuario no autenticado" });
+    }
+    
+    const usuario_id = req.user.id;
     const client = await pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        // 1. Validar clase y cupos
+        // Validar clase y cupos
         const claseRes = await client.query("SELECT * FROM clases WHERE id = $1 FOR UPDATE", [clase_id]);
         if (claseRes.rows.length === 0) throw new Error("Clase no encontrada");
         
         const clase = claseRes.rows[0];
         if (clase.cupos_disponibles <= 0) throw new Error("No hay cupos disponibles");
 
-        // 2. Validar que no esté inscrito ya
+        // Validar que no esté inscrito ya
         const existe = await client.query(
             "SELECT * FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2",
             [usuario_id, clase_id]
         );
         if (existe.rows.length > 0) throw new Error("Ya estás inscrito en esta clase");
 
-        // 3. Inscribir
+        // Inscribir
         await client.query(
             "INSERT INTO inscripciones (usuario_id, clase_id) VALUES ($1, $2)",
             [usuario_id, clase_id]
         );
 
-        // 4. Descontar cupo
+        // Descontar cupo
         await client.query(
             "UPDATE clases SET cupos_disponibles = cupos_disponibles - 1 WHERE id = $1",
             [clase_id]
@@ -150,4 +180,62 @@ exports.inscribirseClase = async (req, res) => {
     }
 };
 
-// ... Puedes agregar cancelarInscripcion, crearClase manual, etc. si los necesitas
+/**
+ * 5. Cancelar inscripción
+ */
+exports.cancelarInscripcion = async (req, res) => {
+    const { clase_id } = req.params;
+    const usuario_id = req.user.id;
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // Verificar inscripción
+        const inscripcion = await client.query(
+            "SELECT * FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2",
+            [usuario_id, clase_id]
+        );
+
+        if (inscripcion.rows.length === 0) throw new Error("No estás inscrito en esta clase");
+
+        // Borrar inscripción
+        await client.query(
+            "DELETE FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2",
+            [usuario_id, clase_id]
+        );
+
+        // Devolver cupo
+        await client.query(
+            "UPDATE clases SET cupos_disponibles = cupos_disponibles + 1 WHERE id = $1",
+            [clase_id]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: "Inscripción cancelada" });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        res.status(400).json({ success: false, message: error.message });
+    } finally {
+        client.release();
+    }
+};
+
+/**
+ * 6. Crear clase manualmente (Opcional, para admin)
+ */
+exports.crearClase = async (req, res) => {
+    const { tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales } = req.body;
+    try {
+        const result = await pool.query(
+            `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales, cupos_disponibles, estado)
+             VALUES ($1, $2, $3, $4, $5, $6, $6, 'programada') RETURNING id`,
+            [tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales]
+        );
+        res.json({ success: true, message: "Clase creada", data: result.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: "Error al crear clase" });
+    }
+};

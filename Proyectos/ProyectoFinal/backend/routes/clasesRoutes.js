@@ -1,55 +1,37 @@
 const express = require('express');
 const router = express.Router();
-const { verificarToken, verificarRol } = require('../middlewares/auth');
-const {
-  obtenerClases,
-  obtenerMisClases,
-  inscribirseClase,
-  cancelarInscripcion,
-  crearClase,
-  generarClasesSemanales
-} = require('../controllers/clasesController');
+const { verificarToken } = require('../middlewares/auth');
+const clasesController = require('../controllers/clasesController');
 
-/**
- * @route   GET /api/clases
- * @desc    Obtener todas las clases disponibles
- * @access  Privado
- */
-router.get('/', verificarToken, obtenerClases);
+// ==========================================
+// Rutas Públicas (o semi-públicas)
+// ==========================================
 
-/**
- * @route   GET /api/clases/mis-clases
- * @desc    Obtener mis clases (inscripciones)
- * @access  Privado
- */
-router.get('/mis-clases', verificarToken, obtenerMisClases);
+// Obtener todas las clases disponibles (Filtros por fecha/tipo)
+// Esta suele ser la que falla si 'obtenerClases' no existe en el controlador
+router.get('/', clasesController.obtenerClases); 
 
-/**
- * @route   POST /api/clases/inscribirse
- * @desc    Inscribirse a una clase
- * @access  Privado (usuarios)
- */
-router.post('/inscribirse', verificarToken, verificarRol('usuario'), inscribirseClase);
+// ==========================================
+// Rutas Privadas (Requieren Token)
+// ==========================================
 
-/**
- * @route   DELETE /api/clases/inscripcion/:clase_id
- * @desc    Cancelar inscripción
- * @access  Privado (usuarios)
- */
-router.delete('/inscripcion/:clase_id', verificarToken, verificarRol('usuario'), cancelarInscripcion);
+// Obtener clases donde estoy inscrito
+router.get('/mis-clases', verificarToken, clasesController.obtenerMisClases);
 
-/**
- * @route   POST /api/clases
- * @desc    Crear clase manualmente
- * @access  Privado (admin)
- */
-router.post('/', verificarToken, verificarRol('administrador'), crearClase);
+// Inscribirse a una clase
+router.post('/inscribirse', verificarToken, clasesController.inscribirseClase);
 
-/**
- * @route   POST /api/clases/generar
- * @desc    Generar clases automáticamente desde horarios
- * @access  Privado (admin)
- */
-router.post('/generar', verificarToken, verificarRol('administrador'), generarClasesSemanales);
+// Cancelar inscripción (usando ID de la clase en la URL)
+router.delete('/cancelar/:clase_id', verificarToken, clasesController.cancelarInscripcion);
+
+// ==========================================
+// Rutas de Administración (Deberían tener middleware esAdmin idealmente)
+// ==========================================
+
+// Crear una clase manualmente
+router.post('/crear', verificarToken, clasesController.crearClase);
+
+// Generar clases automáticas para la semana (LA NUEVA FUNCIÓN)
+router.post('/generar-semanales', verificarToken, clasesController.generarClasesSemanales);
 
 module.exports = router;

@@ -36,7 +36,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Tabla "roles" creada');
     
     // Tabla: usuarios
     await client.query(`
@@ -55,7 +54,6 @@ async function initializeDatabase() {
         FOREIGN KEY (rol_id) REFERENCES roles(id)
       )
     `);
-    console.log('✅ Tabla "usuarios" creada');
     
     // Tabla: planes
     await client.query(`
@@ -69,7 +67,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Tabla "planes" creada');
     
     // Tabla: suscripciones
     await client.query(`
@@ -88,7 +85,6 @@ async function initializeDatabase() {
         FOREIGN KEY (plan_id) REFERENCES planes(id)
       )
     `);
-    console.log('✅ Tabla "suscripciones" creada');
     
     // Tabla: tipos_clase
     await client.query(`
@@ -102,7 +98,6 @@ async function initializeDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Tabla "tipos_clase" creada');
     
     // Tabla: horarios_clase
     await client.query(`
@@ -119,7 +114,6 @@ async function initializeDatabase() {
         FOREIGN KEY (profesor_id) REFERENCES usuarios(id)
       )
     `);
-    console.log('✅ Tabla "horarios_clase" creada');
     
     // Tabla: clases
     await client.query(`
@@ -139,7 +133,6 @@ async function initializeDatabase() {
         FOREIGN KEY (profesor_id) REFERENCES usuarios(id)
       )
     `);
-    console.log('✅ Tabla "clases" creada');
     
     // Tabla: inscripciones
     await client.query(`
@@ -154,7 +147,6 @@ async function initializeDatabase() {
         UNIQUE (usuario_id, clase_id)
       )
     `);
-    console.log('✅ Tabla "inscripciones" creada');
     
     // Tabla: rutinas
     await client.query(`
@@ -174,7 +166,6 @@ async function initializeDatabase() {
         FOREIGN KEY (tipo_clase_id) REFERENCES tipos_clase(id)
       )
     `);
-    console.log('✅ Tabla "rutinas" creada');
     
     // Tabla: mensajes
     await client.query(`
@@ -189,7 +180,6 @@ async function initializeDatabase() {
         FOREIGN KEY (destinatario_id) REFERENCES usuarios(id) ON DELETE CASCADE
       )
     `);
-    console.log('✅ Tabla "mensajes" creada');
     
     // Tabla: comunicados
     await client.query(`
@@ -204,13 +194,24 @@ async function initializeDatabase() {
         FOREIGN KEY (tipo_clase_id) REFERENCES tipos_clase(id)
       )
     `);
-    console.log('✅ Tabla "comunicados" creada');
     
+    // Tabla: solicitudes_cambio_plan
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS solicitudes_cambio_plan (
+          id SERIAL PRIMARY KEY,
+          usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+          plan_solicitado_id INT NOT NULL REFERENCES planes(id),
+          estado VARCHAR(20) DEFAULT 'PENDIENTE',
+          fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          fecha_respuesta TIMESTAMP
+      );
+    `);
+    console.log('✅ Tabla "solicitudes_cambio_plan" verificada/creada');
+
     // ============================================
     // INSERTAR DATOS INICIALES
     // ============================================
     
-    // Verificar si ya existen datos
     const rolesExistentes = await client.query('SELECT COUNT(*) as count FROM roles');
     
     if (parseInt(rolesExistentes.rows[0].count) === 0) {
@@ -223,7 +224,6 @@ async function initializeDatabase() {
         ('profesor', 'Profesor de clases'),
         ('administrador', 'Administrador del gimnasio')
       `);
-      console.log('✅ Roles insertados');
       
       // Planes
       await client.query(`
@@ -232,7 +232,6 @@ async function initializeDatabase() {
         ('Intermedio', 'Acceso a 3 clases, 2 o 3 visitas por semana según distribución', 8000.00, 3, 6),
         ('Premium', 'Acceso ilimitado a todas las clases', 12000.00, NULL, NULL)
       `);
-      console.log('✅ Planes insertados');
       
       // Tipos de clase
       await client.query(`
@@ -241,19 +240,15 @@ async function initializeDatabase() {
         ('Spinning', 'Clase de ciclismo indoor', 60, 20),
         ('Yoga', 'Clase de yoga y meditación', 90, 15)
       `);
-      console.log('✅ Tipos de clase insertados');
       
-      // Usuarios de ejemplo (con contraseñas hasheadas)
+      // Usuarios de ejemplo
       const bcrypt = require('bcryptjs');
-      
-      // Jefe
       const hashJefe = await bcrypt.hash('JefeSupremo', 10);
       await client.query(`
         INSERT INTO usuarios (nombre, apellido, email, password, dni, rol_id) VALUES
         ('Jefe', 'Supremo', 'jefe@gimnasio.com', $1, '1', 3)
       `, [hashJefe]);
       
-      // Administradores
       const hashAdmin1 = await bcrypt.hash('AdminTurnoMañana', 10);
       const hashAdmin2 = await bcrypt.hash('AdminTurnoTarde', 10);
       await client.query(`
@@ -262,7 +257,6 @@ async function initializeDatabase() {
         ('Admin Turno', 'Tarde', 'admin2@gimnasio.com', $2, '3', 3)
       `, [hashAdmin1, hashAdmin2]);
       
-      // Profesores
       const hashProfe1 = await bcrypt.hash('ProfedeYoga', 10);
       const hashProfe2 = await bcrypt.hash('ProfeDeCrossfit', 10);
       const hashProfe3 = await bcrypt.hash('ProfeDeSpinning', 10);
@@ -273,9 +267,7 @@ async function initializeDatabase() {
         ('Profe de', 'Spinning', 'profe3@gimnasio.com', $3, '6', 2)
       `, [hashProfe1, hashProfe2, hashProfe3]);
       
-      console.log('✅ Usuarios de ejemplo insertados');
-      
-      // Horarios de clase fijos
+      // Horarios
       await client.query(`
         INSERT INTO horarios_clase (tipo_clase_id, profesor_id, dia_semana, hora_inicio, hora_fin) VALUES
         (1, 5, 'Lunes', '07:00:00', '18:00:00'),
@@ -295,7 +287,6 @@ async function initializeDatabase() {
         (3, 4, 'Jueves', '08:30:00', '10:00:00'),
         (3, 4, 'Jueves', '18:00:00', '20:00:00')
       `);
-      console.log('✅ Horarios fijos insertados');
       
       console.log('✅ Datos iniciales completos');
     } else {
@@ -304,7 +295,6 @@ async function initializeDatabase() {
     
     client.release();
     console.log('🎉 Base de datos inicializada correctamente\n');
-    
     return pool;
     
   } catch (error) {
@@ -336,5 +326,6 @@ async function query(sql, params) {
 module.exports = {
   initializeDatabase,
   getPool,
-  query
+  query,
+  pool // <--- IMPORTANTE: Exportamos 'pool' para que los controladores puedan usarlo
 };

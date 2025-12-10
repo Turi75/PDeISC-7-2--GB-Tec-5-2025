@@ -1,9 +1,15 @@
-const pool = require('../db'); // Asegúrate de que esta ruta apunte a tu conexión de base de datos
+// CORRECCIÓN: Apuntar a la carpeta config donde está database.js
+const { pool } = require('../config/database'); 
 
 // Crear una solicitud de cambio de plan
 exports.solicitarCambio = async (req, res) => {
   const { plan_id } = req.body;
-  const usuario_id = req.user.id; // Asumimos que obtienes el ID del middleware de autenticación
+  
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ success: false, message: "Usuario no autenticado." });
+  }
+
+  const usuario_id = req.user.id;
 
   try {
     // 1. Verificar si ya tiene una solicitud pendiente
@@ -28,13 +34,17 @@ exports.solicitarCambio = async (req, res) => {
     res.json({ success: true, message: "Solicitud enviada correctamente. Espera la aprobación del administrador." });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error en solicitarCambio:", error);
     res.status(500).json({ success: false, message: "Error al procesar la solicitud." });
   }
 };
 
 // Obtener el estado de la solicitud actual del usuario
 exports.obtenerEstadoSolicitud = async (req, res) => {
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ success: false, message: "Usuario no autenticado." });
+  }
+
   const usuario_id = req.user.id;
 
   try {
@@ -53,7 +63,7 @@ exports.obtenerEstadoSolicitud = async (req, res) => {
       res.json({ success: true, data: null });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Error en obtenerEstadoSolicitud:", error);
     res.status(500).json({ success: false, message: "Error al obtener estado." });
   }
 };

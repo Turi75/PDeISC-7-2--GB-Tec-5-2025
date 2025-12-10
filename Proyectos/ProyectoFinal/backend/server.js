@@ -12,6 +12,8 @@ const clasesRoutes = require('./routes/clasesRoutes');
 const planesRoutes = require('./routes/planesRoutes');
 const mensajesRoutes = require('./routes/mensajesRoutes');
 const rutinasRoutes = require('./routes/rutinasRoutes');
+// NUEVA RUTA: Solicitudes de cambio de plan
+const solicitudesRoutes = require('./routes/solicitudesRoutes'); 
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,7 +65,8 @@ app.get('/', (req, res) => {
       clases: '/api/clases',
       planes: '/api/planes',
       mensajes: '/api/mensajes',
-      rutinas: '/api/rutinas'
+      rutinas: '/api/rutinas',
+      solicitudes: '/api/solicitudes' // Agregado a la documentación
     }
   });
 });
@@ -74,6 +77,8 @@ app.use('/api/clases', clasesRoutes);
 app.use('/api/planes', planesRoutes);
 app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/rutinas', rutinasRoutes);
+// Conectar la nueva ruta de solicitudes
+app.use('/api/solicitudes', solicitudesRoutes);
 
 // ============================================
 // MANEJO DE ERRORES

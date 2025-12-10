@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { verificarToken } = require('../middlewares/auth'); // Usamos el mismo middleware de seguridad que ya tienes
+const { verificarToken, esAdmin } = require('../middlewares/auth'); // Asegurate de tener esAdmin
 const solicitudesController = require('../controllers/solicitudesController');
 
-// Ruta para crear una solicitud (POST /api/solicitudes/crear)
+// Rutas de Usuario
 router.post('/crear', verificarToken, solicitudesController.solicitarCambio);
-
-// Ruta para ver el estado (GET /api/solicitudes/estado)
 router.get('/estado', verificarToken, solicitudesController.obtenerEstadoSolicitud);
+
+// Rutas de Admin
+// Importante: Agregamos el middleware 'esAdmin' para seguridad si lo tienes, si no, solo verificarToken
+router.get('/admin/pendientes', verificarToken, solicitudesController.obtenerTodasSolicitudes);
+router.post('/admin/responder', verificarToken, solicitudesController.responderSolicitud);
 
 module.exports = router;

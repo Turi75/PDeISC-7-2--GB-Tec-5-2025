@@ -1,23 +1,24 @@
 const { pool } = require('../config/database');
 
-// --- USUARIO: Solicitar Cambio ---
+// 1. SOLICITAR CAMBIO (Usuario)
 const solicitarCambio = async (req, res) => {
   const { plan_id } = req.body;
   
   if (!req.user || !req.user.id) {
-    return res.status(401).json({ success: false, message: "No autorizado" });
+    return res.status(401).json({ success: false, message: "No autorizado. Token inválido." });
   }
   
   const usuario_id = req.user.id;
 
   try {
+    // Verificar si ya tiene solicitud pendiente
     const existente = await pool.query(
       "SELECT * FROM solicitudes_cambio_plan WHERE usuario_id = $1 AND estado = 'PENDIENTE'",
       [usuario_id]
     );
 
     if (existente.rows.length > 0) {
-      return res.status(400).json({ success: false, message: "Ya tienes una solicitud en revisión." });
+      return res.status(400).json({ success: false, message: "Ya tienes una solicitud pendiente." });
     }
 
     await pool.query(
@@ -25,15 +26,15 @@ const solicitarCambio = async (req, res) => {
       [usuario_id, plan_id]
     );
 
-    res.json({ success: true, message: "Solicitud enviada." });
+    res.json({ success: true, message: "Solicitud enviada correctamente." });
 
   } catch (error) {
     console.error("Error solicitando cambio:", error);
-    res.status(500).json({ success: false, message: "Error interno." });
+    res.status(500).json({ success: false, message: "Error interno del servidor." });
   }
 };
 
-// --- USUARIO: Ver Estado ---
+// 2. VER ESTADO (Usuario)
 const obtenerEstadoSolicitud = async (req, res) => {
   if (!req.user || !req.user.id) return res.status(401).json({ success: false });
   const usuario_id = req.user.id;
@@ -54,12 +55,12 @@ const obtenerEstadoSolicitud = async (req, res) => {
       res.json({ success: true, data: null });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Error obteniendo estado" });
+    console.error("Error obteniendo estado:", error);
+    res.status(500).json({ success: false, message: "Error interno" });
   }
 };
 
-// --- ADMIN: Ver Todas ---
+// 3. ADMIN: VER TODAS
 const obtenerTodasSolicitudes = async (req, res) => {
     try {
         const result = await pool.query(`
@@ -72,12 +73,12 @@ const obtenerTodasSolicitudes = async (req, res) => {
         `);
         res.json({ success: true, data: result.rows });
     } catch (error) {
-        console.error("Error Admin Solicitudes:", error);
-        res.status(500).json({ success: false, message: "Error al cargar solicitudes" });
+        console.error("Error Admin:", error);
+        res.status(500).json({ success: false, message: "Error cargando lista" });
     }
 };
 
-// --- ADMIN: Responder ---
+// 4. ADMIN: RESPONDER
 const responderSolicitud = async (req, res) => {
     const { solicitud_id, accion } = req.body;
     const client = await pool.connect();
@@ -102,24 +103,22 @@ const responderSolicitud = async (req, res) => {
                 VALUES ($1, $2, $3, $4, 'activa', 'transferencia')`,
                 [solicitud.usuario_id, solicitud.plan_solicitado_id, fechaInicio, fechaFin]
             );
-
         } else {
             await client.query("UPDATE solicitudes_cambio_plan SET estado = 'RECHAZADO', fecha_respuesta = NOW() WHERE id = $1", [solicitud_id]);
         }
 
         await client.query('COMMIT');
-        res.json({ success: true, message: `Solicitud ${accion === 'APROBAR' ? 'aprobada' : 'rechazada'} correctamente.` });
+        res.json({ success: true, message: "Acción realizada con éxito" });
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error("Error respondiendo solicitud:", error);
-        res.status(500).json({ success: false, message: "Error al procesar respuesta" });
+        console.error("Error respondiendo:", error);
+        res.status(500).json({ success: false, message: "Error al procesar" });
     } finally {
         client.release();
     }
 };
 
-// EXPORTACIÓN UNIFICADA
 module.exports = {
     solicitarCambio,
     obtenerEstadoSolicitud,

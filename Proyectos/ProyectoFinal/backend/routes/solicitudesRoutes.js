@@ -5,7 +5,7 @@ const solicitudesController = require('../controllers/solicitudesController');
 
 // Verificación de seguridad
 if (!solicitudesController.solicitarCambio) {
-    throw new Error("ERROR FATAL: El controlador 'solicitudesController' no exportó funciones correctamente.");
+    throw new Error("ERROR FATAL: El controlador solicitudesController falló al cargar.");
 }
 
 // Rutas Usuario

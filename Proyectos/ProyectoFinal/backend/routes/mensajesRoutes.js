@@ -35,7 +35,7 @@ router.post('/', verificarToken, enviarMensaje);
 /**
  * @route   GET /api/mensajes/usuarios/profesores
  * @desc    Obtener lista de profesores
- * @access  Privado - CORRECCIÓN: Accesible para usuarios Y profesores
+ * @access  Privado - ACCESIBLE PARA TODOS (Fix Error 403)
  */
 router.get('/usuarios/profesores', verificarToken, obtenerProfesores);
 

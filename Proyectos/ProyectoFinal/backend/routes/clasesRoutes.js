@@ -3,21 +3,22 @@ const router = express.Router();
 const { verificarToken } = require('../middlewares/auth');
 const clasesController = require('../controllers/clasesController');
 
-// Verificación de seguridad: Si el controlador no cargó, detener aquí para ver el error real
-if (!clasesController.obtenerClases) {
-    throw new Error("ERROR FATAL: El controlador 'clasesController' no exportó 'obtenerClases'. Revisa el archivo.");
+// Verificación de seguridad
+if (!clasesController.generarClasesSemanales) {
+    throw new Error("ERROR CRÍTICO: El controlador no exportó 'generarClasesSemanales'.");
 }
 
-// Rutas Públicas (o semi-públicas)
-router.get('/', clasesController.obtenerClases); 
+// Rutas Públicas
+router.get('/', clasesController.obtenerClases);
 
 // Rutas Privadas
 router.get('/mis-clases', verificarToken, clasesController.obtenerMisClases);
 router.post('/inscribirse', verificarToken, clasesController.inscribirseClase);
 router.delete('/cancelar/:clase_id', verificarToken, clasesController.cancelarInscripcion);
 
-// Rutas Admin
-router.post('/crear', verificarToken, clasesController.crearClase);
+// Rutas Admin (IMPORTANTE: Esta es la que usa el botón naranja)
+// Antes se llamaba '/generar', ahora '/generar-semanales' para ser consistentes
 router.post('/generar-semanales', verificarToken, clasesController.generarClasesSemanales);
+router.post('/crear', verificarToken, clasesController.crearClase);
 
 module.exports = router;

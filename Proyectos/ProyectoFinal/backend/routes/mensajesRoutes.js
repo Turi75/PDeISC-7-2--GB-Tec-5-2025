@@ -35,9 +35,9 @@ router.post('/', verificarToken, enviarMensaje);
 /**
  * @route   GET /api/mensajes/usuarios/profesores
  * @desc    Obtener lista de profesores
- * @access  Privado (usuarios)
+ * @access  Privado - CORRECCIÓN: Accesible para usuarios Y profesores
  */
-router.get('/usuarios/profesores', verificarToken, verificarRol('usuario'), obtenerProfesores);
+router.get('/usuarios/profesores', verificarToken, obtenerProfesores);
 
 /**
  * @route   GET /api/mensajes/usuarios/alumnos

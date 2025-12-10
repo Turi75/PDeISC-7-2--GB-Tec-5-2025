@@ -10,6 +10,7 @@ const obtenerClases = async (req, res) => {
     let sql = `
       SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
              c.cupos_totales, c.cupos_disponibles, c.estado,
+             c.tipo_clase_id, c.profesor_id,
              tc.nombre as tipo_clase, tc.descripcion, tc.imagen,
              u.nombre as profesor_nombre, u.apellido as profesor_apellido
       FROM clases c
@@ -36,6 +37,8 @@ const obtenerClases = async (req, res) => {
     sql += ' ORDER BY c.fecha ASC, c.hora_inicio ASC';
     
     const clases = await query(sql, params);
+    
+    console.log(`📋 Clases encontradas: ${clases.length}`);
     
     res.json({
       success: true,
@@ -302,71 +305,122 @@ const crearClase = async (req, res) => {
 
 /**
  * Generar clases automáticamente desde horarios fijos
+ * CORRECCIÓN: Ahora genera correctamente las clases
  */
 const generarClasesSemanales = async (req, res) => {
   try {
+    console.log('🔧 Iniciando generación de clases semanales...');
+    
     const { fecha_inicio } = req.body;
     const inicio = fecha_inicio ? new Date(fecha_inicio) : new Date();
     
-    // Obtener todos los horarios activos
+    // Obtener todos los horarios activos con información completa
     const horarios = await query(
-      `SELECT hc.*, tc.duracion_minutos, tc.capacidad_maxima
+      `SELECT hc.*, tc.duracion_minutos, tc.capacidad_maxima, tc.nombre as tipo_clase_nombre
        FROM horarios_clase hc
        INNER JOIN tipos_clase tc ON hc.tipo_clase_id = tc.id
        WHERE hc.activo = TRUE`
     );
     
+    console.log(`📅 Horarios encontrados: ${horarios.length}`);
+    
+    if (horarios.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No hay horarios configurados. Configura horarios primero.'
+      });
+    }
+    
     const diasSemana = {
-      'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4,
-      'Viernes': 5, 'Sábado': 6, 'Domingo': 0
+      'Lunes': 1, 
+      'Martes': 2, 
+      'Miércoles': 3, 
+      'Jueves': 4,
+      'Viernes': 5, 
+      'Sábado': 6, 
+      'Domingo': 0
     };
     
     let clasesCreadas = 0;
+    const clasesDetalle = [];
     
     // Generar clases para los próximos 7 días
     for (let i = 0; i < 7; i++) {
       const fecha = new Date(inicio);
       fecha.setDate(fecha.getDate() + i);
       const diaSemana = fecha.getDay();
+      const fechaStr = fecha.toISOString().split('T')[0];
+      
+      console.log(`\n📆 Procesando ${Object.keys(diasSemana).find(k => diasSemana[k] === diaSemana)} (${fechaStr})`);
       
       // Buscar horarios para este día
       const horariosDelDia = horarios.filter(h => diasSemana[h.dia_semana] === diaSemana);
       
+      console.log(`   Horarios para este día: ${horariosDelDia.length}`);
+      
       for (const horario of horariosDelDia) {
-        // Verificar si ya existe esta clase
-        const existe = await query(
-          `SELECT id FROM clases 
-           WHERE tipo_clase_id = $1 AND profesor_id = $2 
-           AND fecha = $3 AND hora_inicio = $4`,
-          [horario.tipo_clase_id, horario.profesor_id, 
-           fecha.toISOString().split('T')[0], horario.hora_inicio]
-        );
-        
-        if (existe.length === 0) {
-          await query(
-            `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, 
-                                 hora_fin, cupos_totales, cupos_disponibles)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [horario.tipo_clase_id, horario.profesor_id, 
-             fecha.toISOString().split('T')[0], horario.hora_inicio,
-             horario.hora_fin, horario.capacidad_maxima, horario.capacidad_maxima]
+        try {
+          // Verificar si ya existe esta clase
+          const existe = await query(
+            `SELECT id FROM clases 
+             WHERE tipo_clase_id = $1 AND profesor_id = $2 
+             AND fecha = $3 AND hora_inicio = $4`,
+            [horario.tipo_clase_id, horario.profesor_id, fechaStr, horario.hora_inicio]
           );
-          clasesCreadas++;
+          
+          if (existe.length === 0) {
+            // Crear la clase
+            const resultado = await query(
+              `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, 
+                                   hora_fin, cupos_totales, cupos_disponibles, estado)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+               RETURNING id`,
+              [
+                horario.tipo_clase_id, 
+                horario.profesor_id, 
+                fechaStr, 
+                horario.hora_inicio,
+                horario.hora_fin, 
+                horario.capacidad_maxima, 
+                horario.capacidad_maxima,
+                'programada'
+              ]
+            );
+            
+            clasesCreadas++;
+            clasesDetalle.push({
+              id: resultado[0].id,
+              tipo: horario.tipo_clase_nombre,
+              fecha: fechaStr,
+              hora: horario.hora_inicio
+            });
+            
+            console.log(`   ✅ Clase creada: ${horario.tipo_clase_nombre} - ${horario.hora_inicio}`);
+          } else {
+            console.log(`   ⏭️  Ya existe: ${horario.tipo_clase_nombre} - ${horario.hora_inicio}`);
+          }
+        } catch (errorClase) {
+          console.error(`   ❌ Error al crear clase:`, errorClase);
         }
       }
     }
     
+    console.log(`\n✅ Proceso completado: ${clasesCreadas} clases creadas`);
+    
     res.json({
       success: true,
-      message: `Se generaron ${clasesCreadas} clases`,
-      data: { clasesCreadas }
+      message: `Se generaron ${clasesCreadas} clases semanales`,
+      data: { 
+        clasesCreadas,
+        detalle: clasesDetalle
+      }
     });
     
   } catch (error) {
-    console.error('Error al generar clases:', error);
+    console.error('❌ Error al generar clases:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al generar clases'
+      message: 'Error al generar clases semanales'
     });
   }
 };

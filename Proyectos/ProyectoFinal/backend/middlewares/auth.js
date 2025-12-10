@@ -62,6 +62,7 @@ const verificarToken = async (req, res, next) => {
 
 /**
  * Middleware para verificar roles específicos
+ * CORRECCIÓN: Ahora acepta múltiples roles y verifica correctamente
  */
 const verificarRol = (...rolesPermitidos) => {
   return (req, res, next) => {
@@ -72,13 +73,21 @@ const verificarRol = (...rolesPermitidos) => {
       });
     }
     
-    if (!rolesPermitidos.includes(req.usuario.rol)) {
+    // CORRECCIÓN: Convertir a minúsculas para comparar
+    const rolUsuario = req.usuario.rol.toLowerCase();
+    const rolesPermitidosLower = rolesPermitidos.map(r => r.toLowerCase());
+    
+    console.log(`🔐 Verificando rol: Usuario tiene '${rolUsuario}', se requiere uno de: [${rolesPermitidosLower.join(', ')}]`);
+    
+    if (!rolesPermitidosLower.includes(rolUsuario)) {
+      console.log(`❌ Acceso denegado para rol: ${rolUsuario}`);
       return res.status(403).json({
         success: false,
         message: 'No tienes permisos para acceder a este recurso'
       });
     }
     
+    console.log(`✅ Acceso permitido para rol: ${rolUsuario}`);
     next();
   };
 };

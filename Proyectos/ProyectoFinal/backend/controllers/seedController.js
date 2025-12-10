@@ -6,7 +6,7 @@ const repararBaseDeDatos = async (req, res) => {
     console.log('🛠️ Iniciando reparación de datos maestros...');
 
     // 1. Asegurar Roles
-    await query(`INSERT INTO roles (nombre) VALUES ('usuario'), ('profesor'), ('administrador') ON CONFLICT (nombre) DO NOTHING`);
+    await query(`INSERT INTO roles (nombre, descripcion) VALUES ('usuario', 'Cliente'), ('profesor', 'Instructor'), ('administrador', 'Admin') ON CONFLICT (nombre) DO NOTHING`);
 
     // 2. Asegurar Tipos de Clase
     await query(`
@@ -36,46 +36,50 @@ const repararBaseDeDatos = async (req, res) => {
       ON CONFLICT (email) DO NOTHING
     `, [hash]);
 
-    // 4. OBTENER IDs REALES (Necesario porque en Render los IDs cambian)
-    const profeJuan = (await query("SELECT id FROM usuarios WHERE email = 'juan@gym.com'"))[0].id;
-    const profeAna = (await query("SELECT id FROM usuarios WHERE email = 'ana@gym.com'"))[0].id;
+    // 4. OBTENER IDs REALES
+    const profeJuanResult = await query("SELECT id FROM usuarios WHERE email = 'juan@gym.com'");
+    const profeAnaResult = await query("SELECT id FROM usuarios WHERE email = 'ana@gym.com'");
     
-    const idCrossfit = (await query("SELECT id FROM tipos_clase WHERE nombre = 'Crossfit'"))[0].id;
-    const idYoga = (await query("SELECT id FROM tipos_clase WHERE nombre = 'Yoga'"))[0].id;
-    const idSpinning = (await query("SELECT id FROM tipos_clase WHERE nombre = 'Spinning'"))[0].id;
+    // Validación por si acaso falló la creación
+    if (profeJuanResult.length === 0 || profeAnaResult.length === 0) {
+        throw new Error("No se pudieron crear o encontrar los profesores.");
+    }
 
-    [cite_start]// 5. INSERTAR HORARIOS FIJOS (¡ESTO ES LO QUE TE FALTA!) [cite: 1]
-    // Primero limpiamos horarios viejos
+    const profeJuan = profeJuanResult[0].id;
+    const profeAna = profeAnaResult[0].id;
+
+    // Obtener IDs de clases
+    const crossfitIdResult = await query("SELECT id FROM tipos_clase WHERE nombre = 'Crossfit'");
+    const yogaIdResult = await query("SELECT id FROM tipos_clase WHERE nombre = 'Yoga'");
+    const spinningIdResult = await query("SELECT id FROM tipos_clase WHERE nombre = 'Spinning'");
+
+    const idCrossfit = crossfitIdResult[0].id;
+    const idYoga = yogaIdResult[0].id;
+    const idSpinning = spinningIdResult[0].id;
+
+    // 5. INSERTAR HORARIOS FIJOS
+    // Limpiamos horarios viejos
     await query("DELETE FROM horarios_clase");
 
-    // Insertamos la plantilla de la semana
+    // Insertamos la plantilla
     await query(`
       INSERT INTO horarios_clase (tipo_clase_id, profesor_id, dia_semana, hora_inicio, hora_fin, activo) VALUES
-      -- Lunes
-      ($1, $3, 'Lunes', '08:00:00', '09:00:00', TRUE), -- Crossfit Juan
-      ($2, $4, 'Lunes', '10:00:00', '11:00:00', TRUE), -- Yoga Ana
-      
-      -- Martes
-      ($3, $3, 'Martes', '18:00:00', '19:00:00', TRUE), -- Spinning Juan
-      
-      -- Miércoles
-      ($1, $3, 'Miércoles', '08:00:00', '09:00:00', TRUE), -- Crossfit Juan
-      ($2, $4, 'Miércoles', '19:00:00', '20:00:00', TRUE), -- Yoga Ana
-      
-      -- Jueves
-      ($3, $4, 'Jueves', '17:00:00', '18:00:00', TRUE), -- Spinning Ana
-      
-      -- Viernes
-      ($1, $3, 'Viernes', '09:00:00', '10:00:00', TRUE)  -- Crossfit Juan
+      ($1, $4, 'Lunes', '08:00:00', '09:00:00', TRUE),
+      ($2, $5, 'Lunes', '10:00:00', '11:00:00', TRUE),
+      ($3, $4, 'Martes', '18:00:00', '19:00:00', TRUE),
+      ($1, $4, 'Miércoles', '08:00:00', '09:00:00', TRUE),
+      ($2, $5, 'Miércoles', '19:00:00', '20:00:00', TRUE),
+      ($3, $5, 'Jueves', '17:00:00', '18:00:00', TRUE),
+      ($1, $4, 'Viernes', '09:00:00', '10:00:00', TRUE)
     `, [idCrossfit, idYoga, idSpinning, profeJuan, profeAna]);
 
     res.json({ 
       success: true, 
-      message: '✅ Base de datos reparada. Ahora el botón "Generar Clases" funcionará.' 
+      message: '✅ Base de datos reparada correctamente.' 
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("ERROR EN REPARAR DB:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };

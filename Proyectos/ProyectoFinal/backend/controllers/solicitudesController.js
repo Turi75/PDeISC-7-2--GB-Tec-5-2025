@@ -1,4 +1,3 @@
-// CORRECCIÓN: Apuntar a la carpeta config donde está database.js
 const { pool } = require('../config/database'); 
 
 // Crear una solicitud de cambio de plan
@@ -12,7 +11,6 @@ exports.solicitarCambio = async (req, res) => {
   const usuario_id = req.user.id;
 
   try {
-    // 1. Verificar si ya tiene una solicitud pendiente
     const solicitudExistente = await pool.query(
       "SELECT * FROM solicitudes_cambio_plan WHERE usuario_id = $1 AND estado = 'PENDIENTE'",
       [usuario_id]
@@ -21,28 +19,29 @@ exports.solicitarCambio = async (req, res) => {
     if (solicitudExistente.rows.length > 0) {
       return res.status(400).json({ 
         success: false, 
-        message: "Ya tienes una solicitud de cambio de plan en proceso." 
+        message: "Ya tienes una solicitud pendiente. Espera a que sea procesada." 
       });
     }
 
-    // 2. Crear la nueva solicitud
     await pool.query(
       "INSERT INTO solicitudes_cambio_plan (usuario_id, plan_solicitado_id, estado) VALUES ($1, $2, 'PENDIENTE')",
       [usuario_id, plan_id]
     );
 
-    res.json({ success: true, message: "Solicitud enviada correctamente. Espera la aprobación del administrador." });
+    res.json({ success: true, message: "Solicitud enviada correctamente." });
 
   } catch (error) {
     console.error("Error en solicitarCambio:", error);
-    res.status(500).json({ success: false, message: "Error al procesar la solicitud." });
+    res.status(500).json({ success: false, message: "Error interno al procesar solicitud." });
   }
 };
 
-// Obtener el estado de la solicitud actual del usuario
+// Obtener estado
 exports.obtenerEstadoSolicitud = async (req, res) => {
   if (!req.user || !req.user.id) {
-    return res.status(401).json({ success: false, message: "Usuario no autenticado." });
+    // Si llegamos aquí, el middleware falló o no inyectó el usuario
+    console.error("Error: Usuario no identificado en controller");
+    return res.status(401).json({ success: false, message: "No autorizado" });
   }
 
   const usuario_id = req.user.id;
@@ -57,13 +56,15 @@ exports.obtenerEstadoSolicitud = async (req, res) => {
       [usuario_id]
     );
 
+    // IMPORTANTE: Si no hay solicitud, devolvemos success: true y data: null
+    // NO devolvemos error.
     if (result.rows.length > 0) {
       res.json({ success: true, data: result.rows[0] });
     } else {
       res.json({ success: true, data: null });
     }
   } catch (error) {
-    console.error("Error en obtenerEstadoSolicitud:", error);
-    res.status(500).json({ success: false, message: "Error al obtener estado." });
+    console.error("Error base de datos (obtenerEstado):", error);
+    res.status(500).json({ success: false, message: "Error de servidor" });
   }
 };

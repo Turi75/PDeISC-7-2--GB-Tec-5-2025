@@ -20,32 +20,35 @@ const PORT = process.env.PORT || 3000;
 // MIDDLEWARES
 // ============================================
 
-// CORS - Configuración para permitir APK y desarrollo
+// CORS - Configuración CORREGIDA para permitir APK y desarrollo
 const corsOptions = {
   origin: function (origin, callback) {
-    // Permitir requests sin origin (como mobile apps)
+    // Permitir requests sin origin (como mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
     
-    // Permitir todos los orígenes en producción para APK
-    if (process.env.NODE_ENV === 'production') {
-      return callback(null, true);
-    }
-    
-    // En desarrollo, permitir localhost
-    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-      return callback(null, true);
-    }
-    
+    // Permitir TODOS los orígenes en producción para APK
+    // También permite localhost para desarrollo
     callback(null, true);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-JSON'],
+  maxAge: 86400 // 24 horas
 };
 
+// IMPORTANTE: Aplicar CORS ANTES de cualquier otra cosa
 app.use(cors(corsOptions));
+
+// Middleware para parsear JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware (opcional, útil para debug)
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  next();
+});
 
 // ============================================
 // RUTAS
@@ -105,7 +108,8 @@ async function startServer() {
       console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
       console.log(`📚 Documentación: http://localhost:${PORT}/`);
       console.log(`🔧 Entorno: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🗄️  Base de datos: PostgreSQL en Render`);
+      console.log(`🗄️ Base de datos: PostgreSQL en Render`);
+      console.log(`🌍 CORS: Habilitado para todos los orígenes`);
     });
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);

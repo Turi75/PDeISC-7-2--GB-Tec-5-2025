@@ -1,17 +1,17 @@
 const { pool } = require('../config/database');
 
-/**
- * 1. Generar clases automáticamente para la próxima semana
- */
-exports.generarClasesSemanales = async (req, res) => {
+// ==========================================
+// 1. GENERAR CLASES SEMANALES
+// ==========================================
+const generarClasesSemanales = async (req, res) => {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Mapeo de días para coincidir con PostgreSQL
+        // Mapeo exacto de días (0=Domingo, 1=Lunes...)
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         
-        let fechaCursor = new Date();
+        let fechaCursor = new Date(); // Fecha de hoy
         let clasesCreadas = 0;
         const clasesDetalle = [];
 
@@ -20,8 +20,12 @@ exports.generarClasesSemanales = async (req, res) => {
         // Iterar los próximos 7 días
         for (let i = 0; i < 7; i++) {
             const diaIndice = fechaCursor.getDay();
-            const diaNombre = diasSemana[diaIndice];
+            const diaNombre = diasSemana[diaIndice]; // Ej: "Miércoles"
+            
+            // Ajuste de zona horaria simple para la fecha SQL (YYYY-MM-DD)
             const fechaSQL = fechaCursor.toISOString().split('T')[0];
+
+            console.log(`Checking ${diaNombre} (${fechaSQL})...`);
 
             // Buscar horarios activos para este día
             const horarios = await client.query(
@@ -33,7 +37,7 @@ exports.generarClasesSemanales = async (req, res) => {
             );
 
             for (const horario of horarios.rows) {
-                // Evitar duplicados
+                // Verificar si ya existe la clase para evitar duplicados
                 const existe = await client.query(
                     `SELECT id FROM clases 
                      WHERE fecha = $1 AND hora_inicio = $2 AND profesor_id = $3`,
@@ -85,10 +89,10 @@ exports.generarClasesSemanales = async (req, res) => {
     }
 };
 
-/**
- * 2. Obtener todas las clases (público/usuarios)
- */
-exports.obtenerClases = async (req, res) => {
+// ==========================================
+// 2. OBTENER CLASES (Público)
+// ==========================================
+const obtenerClases = async (req, res) => {
     try {
         const resultado = await pool.query(`
             SELECT c.*, t.nombre as actividad, u.nombre as profesor_nombre, u.apellido as profesor_apellido 
@@ -105,10 +109,10 @@ exports.obtenerClases = async (req, res) => {
     }
 };
 
-/**
- * 3. Obtener Mis Clases (Inscripciones del usuario)
- */
-exports.obtenerMisClases = async (req, res) => {
+// ==========================================
+// 3. OBTENER MIS CLASES
+// ==========================================
+const obtenerMisClases = async (req, res) => {
     const usuario_id = req.user.id;
     try {
         const resultado = await pool.query(`
@@ -127,14 +131,15 @@ exports.obtenerMisClases = async (req, res) => {
     }
 };
 
-/**
- * 4. Inscribirse a una clase
- */
-exports.inscribirseClase = async (req, res) => {
+// ==========================================
+// 4. INSCRIBIRSE A CLASE
+// ==========================================
+const inscribirseClase = async (req, res) => {
     const { clase_id } = req.body;
     
+    // Verificación extra de seguridad
     if (!req.user || !req.user.id) {
-        return res.status(401).json({ success: false, message: "Usuario no autenticado" });
+        return res.status(401).json({ success: false, message: "Usuario no autenticado (Token inválido)" });
     }
     
     const usuario_id = req.user.id;
@@ -150,7 +155,7 @@ exports.inscribirseClase = async (req, res) => {
         const clase = claseRes.rows[0];
         if (clase.cupos_disponibles <= 0) throw new Error("No hay cupos disponibles");
 
-        // Validar que no esté inscrito ya
+        // Validar inscripción existente
         const existe = await client.query(
             "SELECT * FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2",
             [usuario_id, clase_id]
@@ -180,10 +185,10 @@ exports.inscribirseClase = async (req, res) => {
     }
 };
 
-/**
- * 5. Cancelar inscripción
- */
-exports.cancelarInscripcion = async (req, res) => {
+// ==========================================
+// 5. CANCELAR INSCRIPCIÓN
+// ==========================================
+const cancelarInscripcion = async (req, res) => {
     const { clase_id } = req.params;
     const usuario_id = req.user.id;
     const client = await pool.connect();
@@ -199,7 +204,7 @@ exports.cancelarInscripcion = async (req, res) => {
 
         if (inscripcion.rows.length === 0) throw new Error("No estás inscrito en esta clase");
 
-        // Borrar inscripción
+        // Borrar
         await client.query(
             "DELETE FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2",
             [usuario_id, clase_id]
@@ -222,10 +227,10 @@ exports.cancelarInscripcion = async (req, res) => {
     }
 };
 
-/**
- * 6. Crear clase manualmente (Opcional, para admin)
- */
-exports.crearClase = async (req, res) => {
+// ==========================================
+// 6. CREAR CLASE MANUAL (Admin)
+// ==========================================
+const crearClase = async (req, res) => {
     const { tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales } = req.body;
     try {
         const result = await pool.query(
@@ -238,4 +243,14 @@ exports.crearClase = async (req, res) => {
         console.error(error);
         res.status(500).json({ success: false, message: "Error al crear clase" });
     }
+};
+
+// EXPORTACIÓN UNIFICADA (ESTO ARREGLA EL ERROR DE ROUTER)
+module.exports = {
+    generarClasesSemanales,
+    obtenerClases,
+    obtenerMisClases,
+    inscribirseClase,
+    cancelarInscripcion,
+    crearClase
 };

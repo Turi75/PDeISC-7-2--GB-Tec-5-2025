@@ -1,14 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { verificarToken, esAdmin } = require('../middlewares/auth'); // Asegurate de tener esAdmin
+const { verificarToken } = require('../middlewares/auth');
 const solicitudesController = require('../controllers/solicitudesController');
 
-// Rutas de Usuario
+// Verificación de seguridad
+if (!solicitudesController.solicitarCambio) {
+    throw new Error("ERROR FATAL: El controlador 'solicitudesController' no exportó funciones correctamente.");
+}
+
+// Rutas Usuario
 router.post('/crear', verificarToken, solicitudesController.solicitarCambio);
 router.get('/estado', verificarToken, solicitudesController.obtenerEstadoSolicitud);
 
-// Rutas de Admin
-// Importante: Agregamos el middleware 'esAdmin' para seguridad si lo tienes, si no, solo verificarToken
+// Rutas Admin
 router.get('/admin/pendientes', verificarToken, solicitudesController.obtenerTodasSolicitudes);
 router.post('/admin/responder', verificarToken, solicitudesController.responderSolicitud);
 

@@ -4,6 +4,8 @@ const { verificarToken, verificarRol } = require('../middlewares/auth');
 const {
   obtenerClases,
   obtenerMisClases,
+  obtenerClasesProfesor,
+  obtenerEstadisticasClases,
   inscribirseClase,
   cancelarInscripcion,
   crearClase,
@@ -23,6 +25,20 @@ router.get('/', verificarToken, obtenerClases);
  * @access  Privado
  */
 router.get('/mis-clases', verificarToken, obtenerMisClases);
+
+/**
+ * @route   GET /api/clases/profesor
+ * @desc    Obtener clases del profesor (NUEVO)
+ * @access  Privado (profesor)
+ */
+router.get('/profesor', verificarToken, verificarRol('profesor'), obtenerClasesProfesor);
+
+/**
+ * @route   GET /api/clases/estadisticas
+ * @desc    Obtener estadísticas de clases (NUEVO)
+ * @access  Privado (admin)
+ */
+router.get('/estadisticas', verificarToken, verificarRol('administrador'), obtenerEstadisticasClases);
 
 /**
  * @route   POST /api/clases/inscribirse

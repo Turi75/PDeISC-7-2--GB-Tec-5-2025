@@ -5,6 +5,7 @@ const {
   obtenerPlanes,
   obtenerMiSuscripcion,
   solicitarSuscripcion,
+  solicitarCambioSuscripcion, // NUEVO
   subirComprobante,
   obtenerTodasSuscripciones,
   actualizarEstadoSuscripcion
@@ -30,6 +31,13 @@ router.get('/mi-suscripcion', verificarToken, obtenerMiSuscripcion);
  * @access  Privado (usuario)
  */
 router.post('/solicitar', verificarToken, verificarRol('usuario'), solicitarSuscripcion);
+
+/**
+ * @route   POST /api/planes/cambiar
+ * @desc    Solicitar cambio de plan (NUEVO)
+ * @access  Privado (usuario)
+ */
+router.post('/cambiar', verificarToken, verificarRol('usuario'), solicitarCambioSuscripcion);
 
 /**
  * @route   POST /api/planes/comprobante

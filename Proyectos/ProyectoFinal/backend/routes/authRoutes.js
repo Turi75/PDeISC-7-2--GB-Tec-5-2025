@@ -44,8 +44,4 @@ router.post('/google', loginGoogle);
  */
 router.post('/github', loginGithub);
 
-const { repararBaseDeDatos } = require('../controllers/seedController');
-// Ruta de emergencia
-router.get('/reparar-db', repararBaseDeDatos);
-
 module.exports = router;

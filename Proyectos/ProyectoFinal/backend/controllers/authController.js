@@ -1,9 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { query } = require('../config/database');
-// Importamos la librería de Google
-const { OAuth2Client } = require('google-auth-library');
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /**
  * Generar token JWT
@@ -20,101 +17,246 @@ const generarToken = (usuario) => {
   );
 };
 
-// --- TUS FUNCIONES ORIGINALES (INTACTAS) ---
-
+/**
+ * Registro de nuevo usuario
+ */
 const registrar = async (req, res) => {
   try {
     const { nombre, apellido, email, password, dni } = req.body;
+    
+    // Validaciones
     if (!nombre || !apellido || !email || !password || !dni) {
-      return res.status(400).json({ success: false, message: 'Todos los campos son obligatorios' });
+      return res.status(400).json({
+        success: false,
+        message: 'Todos los campos son obligatorios'
+      });
     }
-    const emailExiste = await query('SELECT id FROM usuarios WHERE email = $1', [email]);
-    if (emailExiste.length > 0) return res.status(400).json({ success: false, message: 'El email ya existe' });
-
+    
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'La contraseña debe tener al menos 8 caracteres'
+      });
+    }
+    
+    // Verificar si el email ya existe
+    const emailExiste = await query(
+      'SELECT id FROM usuarios WHERE email = $1',
+      [email]
+    );
+    
+    if (emailExiste.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'El email ya está registrado'
+      });
+    }
+    
+    // Verificar si el DNI ya existe
+    const dniExiste = await query(
+      'SELECT id FROM usuarios WHERE dni = $1',
+      [dni]
+    );
+    
+    if (dniExiste.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'El DNI ya está registrado'
+      });
+    }
+    
+    // Encriptar contraseña
     const passwordHash = await bcrypt.hash(password, 10);
-    const rolUsuario = await query("SELECT id FROM roles WHERE nombre = 'usuario'");
-    const rolId = rolUsuario[0]?.id || 1;
-
-    const nuevo = await query(
-      `INSERT INTO usuarios (nombre, apellido, email, password, dni, rol_id, activo)
-       VALUES ($1, $2, $3, $4, $5, $6, TRUE) RETURNING id`,
-      [nombre, apellido, email, passwordHash, dni, rolId]
+    
+    // Obtener ID del rol "usuario"
+    const rolUsuario = await query(
+      'SELECT id FROM roles WHERE nombre = $1',
+      ['usuario']
     );
-
-    const usuario = await query('SELECT * FROM usuarios WHERE id = $1', [nuevo[0].id]);
-    const token = generarToken(usuario[0]);
-
-    res.status(201).json({ success: true, data: { usuario: usuario[0], token } });
-  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
-};
-
-const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const usuarios = await query(`
-      SELECT u.*, r.nombre as rol FROM usuarios u 
-      INNER JOIN roles r ON u.rol_id = r.id WHERE u.email = $1`, [email]);
     
-    if (usuarios.length === 0) return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-    const usuario = usuarios[0];
+    // Crear usuario
+    const resultado = await query(
+      `INSERT INTO usuarios (nombre, apellido, email, password, dni, rol_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id`,
+      [nombre, apellido, email, passwordHash, dni, rolUsuario[0].id]
+    );
     
-    if (!await bcrypt.compare(password, usuario.password)) {
-      return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-    }
-
-    const token = generarToken(usuario);
-    res.json({ success: true, data: { usuario, token } });
-  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
-};
-
-const obtenerPerfil = async (req, res) => {
-  try {
-    const usuario = await query(
+    // Obtener usuario creado
+    const nuevoUsuario = await query(
       `SELECT u.id, u.nombre, u.apellido, u.email, u.dni, r.nombre as rol
-       FROM usuarios u INNER JOIN roles r ON u.rol_id = r.id WHERE u.id = $1`,
-      [req.usuario.id]
+       FROM usuarios u
+       INNER JOIN roles r ON u.rol_id = r.id
+       WHERE u.id = $1`,
+      [resultado[0].id]
     );
-    res.json({ success: true, data: usuario[0] });
-  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
-};
-
-// --- NUEVA FUNCIÓN AGREGADA (ESTO ES LO NUEVO) ---
-
-const loginGoogle = async (req, res) => {
-  try {
-    const { token } = req.body;
-    // Validar token con Google
-    // NOTA: Si no configuras el GOOGLE_CLIENT_ID en Render, esto advertirá pero intentará funcionar
-    const ticket = await client.verifyIdToken({ idToken: token, audience: process.env.GOOGLE_CLIENT_ID });
-    const { email, given_name, family_name, sub } = ticket.getPayload();
-
-    // Buscar si ya existe el usuario
-    let usuario = (await query('SELECT u.*, r.nombre as rol FROM usuarios u JOIN roles r ON u.rol_id=r.id WHERE email = $1', [email]))[0];
-
-    if (!usuario) {
-      // Si no existe, lo creamos automáticamente
-      const pass = Math.random().toString(36); // Contraseña aleatoria
-      const hash = await bcrypt.hash(pass, 10);
-      const dniTemp = 'G-' + sub.substring(0,8); // DNI temporal
-      const rolId = (await query("SELECT id FROM roles WHERE nombre = 'usuario'"))[0].id;
-
-      const nuevo = await query(
-        `INSERT INTO usuarios (nombre, apellido, email, password, dni, rol_id, activo)
-         VALUES ($1, $2, $3, $4, $5, $6, TRUE) RETURNING id`,
-        [given_name, family_name, email, hash, dniTemp, rolId]
-      );
-      usuario = (await query('SELECT u.*, r.nombre as rol FROM usuarios u JOIN roles r ON u.rol_id=r.id WHERE u.id = $1', [nuevo[0].id]))[0];
-    }
-
-    const appToken = generarToken(usuario);
-    res.json({ success: true, data: { usuario, token: appToken } });
-
+    
+    // Generar token
+    const token = generarToken(nuevoUsuario[0]);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Usuario registrado exitosamente',
+      data: {
+        usuario: {
+          id: nuevoUsuario[0].id,
+          nombre: nuevoUsuario[0].nombre,
+          apellido: nuevoUsuario[0].apellido,
+          email: nuevoUsuario[0].email,
+          dni: nuevoUsuario[0].dni,
+          rol: nuevoUsuario[0].rol
+        },
+        token
+      }
+    });
+    
   } catch (error) {
-    console.error(error);
-    res.status(401).json({ success: false, message: 'Error con Google: ' + error.message });
+    console.error('Error en registro:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al registrar usuario'
+    });
   }
 };
 
-const loginGithub = async (req, res) => res.status(501).json({message: 'No implementado'});
+/**
+ * Login de usuario
+ */
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Validaciones
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email y contraseña son obligatorios'
+      });
+    }
+    
+    // Buscar usuario
+    const usuarios = await query(
+      `SELECT u.id, u.nombre, u.apellido, u.email, u.password, u.dni, u.activo,
+              r.nombre as rol
+       FROM usuarios u
+       INNER JOIN roles r ON u.rol_id = r.id
+       WHERE u.email = $1`,
+      [email]
+    );
+    
+    if (usuarios.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas'
+      });
+    }
+    
+    const usuario = usuarios[0];
+    
+    // Verificar si el usuario está activo
+    if (!usuario.activo) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario inactivo. Contacta al administrador'
+      });
+    }
+    
+    // Verificar contraseña
+    const passwordValido = await bcrypt.compare(password, usuario.password);
+    
+    if (!passwordValido) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales inválidas'
+      });
+    }
+    
+    // Generar token
+    const token = generarToken(usuario);
+    
+    res.json({
+      success: true,
+      message: 'Inicio de sesión exitoso',
+      data: {
+        usuario: {
+          id: usuario.id,
+          nombre: usuario.nombre,
+          apellido: usuario.apellido,
+          email: usuario.email,
+          dni: usuario.dni,
+          rol: usuario.rol
+        },
+        token
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al iniciar sesión'
+    });
+  }
+};
 
-module.exports = { registrar, login, obtenerPerfil, loginGoogle, loginGithub };
+/**
+ * Obtener perfil del usuario autenticado
+ */
+const obtenerPerfil = async (req, res) => {
+  try {
+    // Obtener información completa del usuario
+    const usuario = await query(
+      `SELECT u.id, u.nombre, u.apellido, u.email, u.dni, u.foto_perfil,
+              r.nombre as rol,
+              (SELECT COUNT(*) FROM inscripciones WHERE usuario_id = u.id) as total_clases,
+              s.estado as estado_suscripcion, s.fecha_fin as fecha_fin_suscripcion,
+              p.nombre as plan_nombre
+       FROM usuarios u
+       INNER JOIN roles r ON u.rol_id = r.id
+       LEFT JOIN suscripciones s ON u.id = s.usuario_id AND s.estado = 'activa'
+       LEFT JOIN planes p ON s.plan_id = p.id
+       WHERE u.id = $1`,
+      [req.usuario.id]
+    );
+    
+    res.json({
+      success: true,
+      data: usuario[0]
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener perfil:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener perfil'
+    });
+  }
+};
+
+/**
+ * Login con Google (placeholder - implementar OAuth después)
+ */
+const loginGoogle = async (req, res) => {
+  res.status(501).json({
+    success: false,
+    message: 'Login con Google en desarrollo'
+  });
+};
+
+/**
+ * Login con GitHub (placeholder - implementar OAuth después)
+ */
+const loginGithub = async (req, res) => {
+  res.status(501).json({
+    success: false,
+    message: 'Login con GitHub en desarrollo'
+  });
+};
+
+module.exports = {
+  registrar,
+  login,
+  obtenerPerfil,
+  loginGoogle,
+  loginGithub
+};

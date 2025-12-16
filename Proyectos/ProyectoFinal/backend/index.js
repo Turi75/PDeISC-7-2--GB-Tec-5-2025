@@ -12,6 +12,7 @@ const clasesRoutes = require('./routes/clasesRoutes');
 const planesRoutes = require('./routes/planesRoutes');
 const mensajesRoutes = require('./routes/mensajesRoutes');
 const rutinasRoutes = require('./routes/rutinasRoutes');
+const usuariosRoutes = require('./routes/usuariosRoutes'); // NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,7 +64,8 @@ app.get('/', (req, res) => {
       clases: '/api/clases',
       planes: '/api/planes',
       mensajes: '/api/mensajes',
-      rutinas: '/api/rutinas'
+      rutinas: '/api/rutinas',
+      usuarios: '/api/usuarios' // NUEVO
     }
   });
 });
@@ -74,6 +76,7 @@ app.use('/api/clases', clasesRoutes);
 app.use('/api/planes', planesRoutes);
 app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/rutinas', rutinasRoutes);
+app.use('/api/usuarios', usuariosRoutes); // NUEVO
 
 // ============================================
 // MANEJO DE ERRORES
@@ -109,7 +112,7 @@ async function startServer() {
       console.log(`📚 Documentación: http://localhost:${PORT}/`);
       console.log(`🔧 Entorno: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🗄️ Base de datos: PostgreSQL en Render`);
-      console.log(`🌍 CORS: Habilitado para todos los orígenes`);
+      console.log(`🌐 CORS: Habilitado para todos los orígenes`);
     });
   } catch (error) {
     console.error('❌ Error al iniciar el servidor:', error);

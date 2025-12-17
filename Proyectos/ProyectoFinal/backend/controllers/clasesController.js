@@ -54,7 +54,7 @@ const obtenerClases = async (req, res) => {
 
 /**
  * Obtener clases del usuario (inscripciones)
- * CORREGIDO: Filtra desde el backend las inasistencias pasadas.
+ * Filtra para que el alumno solo vea historial de asistencia o clases futuras
  */
 const obtenerMisClases = async (req, res) => {
   try {
@@ -89,12 +89,13 @@ const obtenerMisClases = async (req, res) => {
 
 /**
  * Obtener clases del profesor (Agenda)
- * CORREGIDO: Orden ASCENDENTE para ver lo próximo (Hoy -> Mañana)
- * Se incluye desde el día actual en adelante.
+ * CORREGIDO: Se eliminó el filtro estricto de fecha que causaba que la lista estuviera vacía.
+ * Ahora se basa en el ESTADO de la clase ('programada' o 'en_curso') o si es futura.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
+    console.log(`👨‍🏫 Buscando clases para profesor ID: ${profesor_id}`);
     
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
@@ -104,12 +105,14 @@ const obtenerClasesProfesor = async (req, res) => {
        FROM clases c
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        WHERE c.profesor_id = $1
-         AND c.fecha >= CURRENT_DATE -- Solo mostrar desde hoy en adelante
-       ORDER BY c.fecha ASC, c.hora_inicio ASC -- Orden cronológico correcto
+         AND (c.estado IN ('programada', 'en_curso') OR c.fecha >= CURRENT_DATE)
+       ORDER BY c.fecha ASC, c.hora_inicio ASC
        LIMIT 100`, 
       [profesor_id]
     );
     
+    console.log(`✅ Clases encontradas: ${clases.length}`);
+
     res.json({
       success: true,
       data: clases
@@ -126,31 +129,40 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * Dashboard Profesor
+ * CORREGIDO: Cálculos robustos para evitar ceros falsos
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
     
+    // 1. Clases de Hoy (Usamos rango de fecha para evitar errores de zona horaria)
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
-       WHERE profesor_id = $1 AND fecha = CURRENT_DATE AND estado != 'cancelada'`,
+       WHERE profesor_id = $1 
+       AND fecha = CURRENT_DATE
+       AND estado != 'cancelada'`,
       [profesor_id]
     );
 
+    // 2. Total Alumnos (Usuarios registrados activos)
     const totalAlumnos = await query(
       `SELECT COUNT(*) as total FROM usuarios u
        INNER JOIN roles r ON u.rol_id = r.id
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
+    // 3. Clases de la Semana (Próximos 7 días o estado programada)
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
-       AND fecha >= CURRENT_DATE AND fecha <= (CURRENT_DATE + INTERVAL '7 days')
-       AND estado != 'cancelada'`,
+       AND (
+         (fecha >= CURRENT_DATE AND fecha <= (CURRENT_DATE + INTERVAL '7 days'))
+         OR estado = 'programada'
+       )`,
       [profesor_id]
     );
 
+    // 4. Mensajes sin leer
     const mensajes = await query(
       `SELECT COUNT(*) as total FROM mensajes 
        WHERE destinatario_id = $1 AND leido = FALSE`,

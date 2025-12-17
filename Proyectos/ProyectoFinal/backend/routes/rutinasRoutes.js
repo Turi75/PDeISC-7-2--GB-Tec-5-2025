@@ -3,6 +3,7 @@ const router = express.Router();
 const { verificarToken, verificarRol } = require('../middlewares/auth');
 const {
   obtenerMisRutinas,
+  obtenerAlumnosParaRutinas,  // NUEVO
   asignarRutina,
   obtenerRutinasAsignadas,
   actualizarRutina,
@@ -11,17 +12,17 @@ const {
 
 /**
  * @route   GET /api/rutinas
- * @desc    Obtener mis rutinas
+ * @desc    Obtener mis rutinas (para usuarios/alumnos)
  * @access  Privado (usuarios)
  */
 router.get('/', verificarToken, verificarRol('usuario'), obtenerMisRutinas);
 
 /**
- * @route   POST /api/rutinas
- * @desc    Asignar rutina a alumno
+ * @route   GET /api/rutinas/alumnos
+ * @desc    Obtener todos los alumnos disponibles para asignar rutinas
  * @access  Privado (profesores)
  */
-router.post('/', verificarToken, verificarRol('profesor'), asignarRutina);
+router.get('/alumnos', verificarToken, verificarRol('profesor'), obtenerAlumnosParaRutinas);
 
 /**
  * @route   GET /api/rutinas/asignadas
@@ -29,6 +30,13 @@ router.post('/', verificarToken, verificarRol('profesor'), asignarRutina);
  * @access  Privado (profesores)
  */
 router.get('/asignadas', verificarToken, verificarRol('profesor'), obtenerRutinasAsignadas);
+
+/**
+ * @route   POST /api/rutinas
+ * @desc    Asignar rutina a alumno
+ * @access  Privado (profesores)
+ */
+router.post('/', verificarToken, verificarRol('profesor'), asignarRutina);
 
 /**
  * @route   PUT /api/rutinas/:id

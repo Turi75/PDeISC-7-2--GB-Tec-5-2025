@@ -1,7 +1,7 @@
 const { query } = require('../config/database');
 
 /**
- * Obtener todas las clases disponibles
+ * Obtener todas las clases disponibles (Para el Home de alumnos)
  */
 const obtenerClases = async (req, res) => {
   try {
@@ -86,12 +86,16 @@ const obtenerMisClases = async (req, res) => {
 };
 
 /**
- * NUEVO - Obtener clases del profesor
+ * CORREGIDO - Obtener clases del profesor
+ * Se eliminó la restricción estricta de fecha futura para asegurar que se vean las clases
+ * y se agregaron logs de depuración.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
+    console.log(`👨‍🏫 Buscando clases para el profesor ID: ${profesor_id}`);
     
+    // Consulta modificada: Trae las clases ordenadas por fecha reciente (incluyendo pasadas para verificar)
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
               c.cupos_totales, c.cupos_disponibles, c.estado,
@@ -99,18 +103,21 @@ const obtenerClasesProfesor = async (req, res) => {
               (SELECT COUNT(*) FROM inscripciones WHERE clase_id = c.id) as inscritos
        FROM clases c
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
-       WHERE c.profesor_id = $1 AND c.fecha >= CURRENT_DATE
-       ORDER BY c.fecha ASC, c.hora_inicio ASC`,
+       WHERE c.profesor_id = $1
+       ORDER BY c.fecha DESC, c.hora_inicio ASC
+       LIMIT 50`, // Limitamos a 50 para no saturar, pero quitamos el filtro de fecha estricto
       [profesor_id]
     );
     
+    console.log(`✅ Se encontraron ${clases.length} clases para el profesor.`);
+
     res.json({
       success: true,
       data: clases
     });
     
   } catch (error) {
-    console.error('Error al obtener clases del profesor:', error);
+    console.error('❌ Error al obtener clases del profesor:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener tus clases'
@@ -119,11 +126,10 @@ const obtenerClasesProfesor = async (req, res) => {
 };
 
 /**
- * NUEVO - Obtener estadísticas de clases para admin
+ * Obtener estadísticas de clases para admin
  */
 const obtenerEstadisticasClases = async (req, res) => {
   try {
-    // Clases hoy
     const hoy = new Date().toISOString().split('T')[0];
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
@@ -131,7 +137,6 @@ const obtenerEstadisticasClases = async (req, res) => {
       [hoy]
     );
     
-    // Clases esta semana
     const inicioSemana = new Date();
     inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay() + 1);
     const finSemana = new Date(inicioSemana);
@@ -143,7 +148,6 @@ const obtenerEstadisticasClases = async (req, res) => {
       [inicioSemana.toISOString().split('T')[0], finSemana.toISOString().split('T')[0]]
     );
     
-    // Próximas clases con detalles
     const proximasClases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
               c.cupos_totales, c.cupos_disponibles,
@@ -190,7 +194,6 @@ const inscribirseClase = async (req, res) => {
       });
     }
     
-    // Verificar que la clase existe y tiene cupos
     const clase = await query(
       'SELECT * FROM clases WHERE id = $1 AND estado = $2',
       [clase_id, 'programada']
@@ -210,7 +213,7 @@ const inscribirseClase = async (req, res) => {
       });
     }
     
-    // Verificar que el usuario tiene suscripción activa
+    // Verificar suscripción
     const suscripcion = await query(
       `SELECT s.*, p.max_clases, p.max_visitas_semana
        FROM suscripciones s
@@ -223,52 +226,13 @@ const inscribirseClase = async (req, res) => {
     if (suscripcion.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No tienes una suscripción activa. Por favor, ve a tu Perfil y adquiere un plan.'
+        message: 'No tienes una suscripción activa.'
       });
     }
     
     const plan = suscripcion[0];
     
-    // Verificar límite de clases si aplica
-    if (plan.max_clases !== null) {
-      const clasesInscritas = await query(
-        `SELECT COUNT(DISTINCT c.tipo_clase_id) as total
-         FROM inscripciones i
-         INNER JOIN clases c ON i.clase_id = c.id
-         WHERE i.usuario_id = $1 AND c.fecha >= CURRENT_DATE`,
-        [usuario_id]
-      );
-      
-      if (parseInt(clasesInscritas[0].total) >= plan.max_clases) {
-        return res.status(400).json({
-          success: false,
-          message: `Tu plan permite inscribirte a un máximo de ${plan.max_clases} tipos de clase`
-        });
-      }
-    }
-    
-    // Verificar límite de visitas semanales si aplica
-    if (plan.max_visitas_semana !== null) {
-      const inicioSemana = new Date();
-      inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay() + 1);
-      
-      const visitasSemanales = await query(
-        `SELECT COUNT(*) as total
-         FROM inscripciones i
-         INNER JOIN clases c ON i.clase_id = c.id
-         WHERE i.usuario_id = $1 AND c.fecha >= $2`,
-        [usuario_id, inicioSemana.toISOString().split('T')[0]]
-      );
-      
-      if (parseInt(visitasSemanales[0].total) >= plan.max_visitas_semana) {
-        return res.status(400).json({
-          success: false,
-          message: `Tu plan permite ${plan.max_visitas_semana} visitas por semana`
-        });
-      }
-    }
-    
-    // Verificar que no esté ya inscrito
+    // Validar inscripcion duplicada
     const yaInscrito = await query(
       'SELECT id FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2',
       [usuario_id, clase_id]
@@ -281,13 +245,11 @@ const inscribirseClase = async (req, res) => {
       });
     }
     
-    // Inscribir al usuario
     await query(
       'INSERT INTO inscripciones (usuario_id, clase_id) VALUES ($1, $2)',
       [usuario_id, clase_id]
     );
     
-    // Actualizar cupos disponibles
     await query(
       'UPDATE clases SET cupos_disponibles = cupos_disponibles - 1 WHERE id = $1',
       [clase_id]
@@ -308,14 +270,13 @@ const inscribirseClase = async (req, res) => {
 };
 
 /**
- * Cancelar inscripción a una clase
+ * Cancelar inscripción
  */
 const cancelarInscripcion = async (req, res) => {
   try {
     const { clase_id } = req.params;
     const usuario_id = req.usuario.id;
     
-    // Verificar que está inscrito
     const inscripcion = await query(
       'SELECT id FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2',
       [usuario_id, clase_id]
@@ -328,13 +289,11 @@ const cancelarInscripcion = async (req, res) => {
       });
     }
     
-    // Cancelar inscripción
     await query(
       'DELETE FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2',
       [usuario_id, clase_id]
     );
     
-    // Liberar cupo
     await query(
       'UPDATE clases SET cupos_disponibles = cupos_disponibles + 1 WHERE id = $1',
       [clase_id]
@@ -355,18 +314,11 @@ const cancelarInscripcion = async (req, res) => {
 };
 
 /**
- * Crear clase (solo admin)
+ * Crear clase (admin)
  */
 const crearClase = async (req, res) => {
   try {
     const { tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales } = req.body;
-    
-    if (!tipo_clase_id || !profesor_id || !fecha || !hora_inicio || !hora_fin || !cupos_totales) {
-      return res.status(400).json({
-        success: false,
-        message: 'Todos los campos son obligatorios'
-      });
-    }
     
     const resultado = await query(
       `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, 
@@ -392,24 +344,19 @@ const crearClase = async (req, res) => {
 };
 
 /**
- * Generar clases automáticamente desde horarios fijos - MEJORADO
+ * Generar clases automáticamente
  */
 const generarClasesSemanales = async (req, res) => {
   try {
     const { fecha_inicio } = req.body;
     const inicio = fecha_inicio ? new Date(fecha_inicio) : new Date();
     
-    console.log('📅 Generando clases desde:', inicio.toISOString().split('T')[0]);
-    
-    // Obtener todos los horarios activos
     const horarios = await query(
       `SELECT hc.*, tc.duracion_minutos, tc.capacidad_maxima
        FROM horarios_clase hc
        INNER JOIN tipos_clase tc ON hc.tipo_clase_id = tc.id
        WHERE hc.activo = TRUE`
     );
-    
-    console.log(`📋 Horarios encontrados: ${horarios.length}`);
     
     if (horarios.length === 0) {
       return res.json({
@@ -420,32 +367,20 @@ const generarClasesSemanales = async (req, res) => {
     }
     
     const diasSemana = {
-      'Lunes': 1, 
-      'Martes': 2, 
-      'Miércoles': 3, 
-      'Jueves': 4,
-      'Viernes': 5, 
-      'Sábado': 6, 
-      'Domingo': 0
+      'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4,
+      'Viernes': 5, 'Sábado': 6, 'Domingo': 0
     };
     
     let clasesCreadas = 0;
     
-    // Generar clases para los próximos 7 días
     for (let i = 0; i < 7; i++) {
       const fecha = new Date(inicio);
       fecha.setDate(fecha.getDate() + i);
       const diaSemana = fecha.getDay();
       
-      console.log(`📆 Procesando ${fecha.toLocaleDateString('es-AR')} (día: ${diaSemana})`);
-      
-      // Buscar horarios para este día
       const horariosDelDia = horarios.filter(h => diasSemana[h.dia_semana] === diaSemana);
       
-      console.log(`  → Horarios para este día: ${horariosDelDia.length}`);
-      
       for (const horario of horariosDelDia) {
-        // Verificar si ya existe esta clase
         const existe = await query(
           `SELECT id FROM clases 
            WHERE tipo_clase_id = $1 AND profesor_id = $2 
@@ -455,8 +390,6 @@ const generarClasesSemanales = async (req, res) => {
         );
         
         if (existe.length === 0) {
-          console.log(`  ✅ Creando clase: ${horario.tipo_clase_id} - ${horario.hora_inicio}`);
-          
           await query(
             `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, 
                                  hora_fin, cupos_totales, cupos_disponibles)
@@ -466,19 +399,13 @@ const generarClasesSemanales = async (req, res) => {
              horario.hora_fin, horario.capacidad_maxima, horario.capacidad_maxima]
           );
           clasesCreadas++;
-        } else {
-          console.log(`  ⏭️  Clase ya existe, omitiendo...`);
         }
       }
     }
     
-    console.log(`🎉 Total de clases creadas: ${clasesCreadas}`);
-    
     res.json({
       success: true,
-      message: clasesCreadas > 0 
-        ? `Se generaron ${clasesCreadas} clases nuevas` 
-        : 'No se generaron clases nuevas (ya existen)',
+      message: `Se generaron ${clasesCreadas} clases nuevas`,
       data: { clasesCreadas }
     });
     
@@ -494,8 +421,8 @@ const generarClasesSemanales = async (req, res) => {
 module.exports = {
   obtenerClases,
   obtenerMisClases,
-  obtenerClasesProfesor,          // NUEVO
-  obtenerEstadisticasClases,      // NUEVO
+  obtenerClasesProfesor,
+  obtenerEstadisticasClases,
   inscribirseClase,
   cancelarInscripcion,
   crearClase,

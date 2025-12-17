@@ -54,6 +54,7 @@ const obtenerClases = async (req, res) => {
 
 /**
  * Obtener clases del usuario (inscripciones)
+ * CORREGIDO: Filtra clases pasadas donde NO hubo asistencia.
  */
 const obtenerMisClases = async (req, res) => {
   try {
@@ -67,6 +68,7 @@ const obtenerMisClases = async (req, res) => {
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        INNER JOIN usuarios u ON c.profesor_id = u.id
        WHERE i.usuario_id = $1
+         AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
        ORDER BY c.fecha DESC, c.hora_inicio DESC`,
       [req.usuario.id]
     );
@@ -86,16 +88,13 @@ const obtenerMisClases = async (req, res) => {
 };
 
 /**
- * CORREGIDO - Obtener clases del profesor
- * Se eliminó la restricción estricta de fecha futura para asegurar que se vean las clases
- * y se agregaron logs de depuración.
+ * Obtener clases del profesor
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
     console.log(`👨‍🏫 Buscando clases para el profesor ID: ${profesor_id}`);
     
-    // Consulta modificada: Trae las clases ordenadas por fecha reciente (incluyendo pasadas para verificar)
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
               c.cupos_totales, c.cupos_disponibles, c.estado,
@@ -105,7 +104,7 @@ const obtenerClasesProfesor = async (req, res) => {
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        WHERE c.profesor_id = $1
        ORDER BY c.fecha DESC, c.hora_inicio ASC
-       LIMIT 50`, // Limitamos a 50 para no saturar, pero quitamos el filtro de fecha estricto
+       LIMIT 50`,
       [profesor_id]
     );
     
@@ -229,8 +228,6 @@ const inscribirseClase = async (req, res) => {
         message: 'No tienes una suscripción activa.'
       });
     }
-    
-    const plan = suscripcion[0];
     
     // Validar inscripcion duplicada
     const yaInscrito = await query(

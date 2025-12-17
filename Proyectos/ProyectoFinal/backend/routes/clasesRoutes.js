@@ -5,6 +5,7 @@ const {
   obtenerClases,
   obtenerMisClases,
   obtenerClasesProfesor,
+  obtenerDashboardProfesor, // Importamos la nueva función
   obtenerEstadisticasClases,
   inscribirseClase,
   cancelarInscripcion,
@@ -28,14 +29,21 @@ router.get('/mis-clases', verificarToken, obtenerMisClases);
 
 /**
  * @route   GET /api/clases/profesor
- * @desc    Obtener clases del profesor (NUEVO)
+ * @desc    Obtener clases del profesor
  * @access  Privado (profesor)
  */
 router.get('/profesor', verificarToken, verificarRol('profesor'), obtenerClasesProfesor);
 
 /**
+ * @route   GET /api/clases/dashboard/profesor
+ * @desc    Obtener estadísticas del panel de profesor (NUEVO)
+ * @access  Privado (profesor)
+ */
+router.get('/dashboard/profesor', verificarToken, verificarRol('profesor'), obtenerDashboardProfesor);
+
+/**
  * @route   GET /api/clases/estadisticas
- * @desc    Obtener estadísticas de clases (NUEVO)
+ * @desc    Obtener estadísticas de clases (Admin)
  * @access  Privado (admin)
  */
 router.get('/estadisticas', verificarToken, verificarRol('administrador'), obtenerEstadisticasClases);

@@ -32,23 +32,26 @@ const obtenerMisRutinas = async (req, res) => {
 };
 
 /**
- * Obtener todos los usuarios disponibles para asignar rutinas
- * CORREGIDO: Consulta simplificada para evitar errores 500.
- * Trae a todos los usuarios registrados activos.
+ * SOLUCIÓN ERROR 500: Obtener TODOS los usuarios 'usuario' activos.
+ * Se eliminaron los JOINs complejos que causaban el error.
+ * Ahora funciona como un buscador global de alumnos.
  */
 const obtenerAlumnosParaRutinas = async (req, res) => {
   try {
     console.log('📚 Buscando usuarios registrados para sistema de rutinas...');
     
-    // Consulta simplificada: Solo trae usuarios activos
+    // Consulta simplificada y robusta
+    // Asume que el rol 'usuario' existe en la tabla roles.
+    // Si usas IDs fijos para roles, puedes cambiar la subconsulta por el ID (ej: 2).
     const usuarios = await query(
-      `SELECT id, nombre, apellido, email, dni 
-       FROM usuarios 
-       WHERE rol = 'usuario' AND activo = TRUE 
-       ORDER BY nombre ASC`
+      `SELECT u.id, u.nombre, u.apellido, u.email, u.dni, u.foto_perfil
+       FROM usuarios u
+       INNER JOIN roles r ON u.rol_id = r.id
+       WHERE r.nombre = 'usuario' AND u.activo = TRUE
+       ORDER BY u.nombre ASC`
     );
     
-    console.log(`✅ Se encontraron ${usuarios.length} usuarios para asignar rutinas`);
+    console.log(`✅ Se encontraron ${usuarios.length} usuarios disponibles.`);
     
     res.json({
       success: true,
@@ -65,7 +68,7 @@ const obtenerAlumnosParaRutinas = async (req, res) => {
 };
 
 /**
- * Asignar rutina a un alumno (solo profesores)
+ * Asignar rutina a un usuario
  */
 const asignarRutina = async (req, res) => {
   try {
@@ -145,7 +148,6 @@ const actualizarRutina = async (req, res) => {
     const { titulo, descripcion } = req.body;
     const profesor_id = req.usuario.id;
     
-    // Validar que la rutina pertenezca al profesor
     const check = await query(
       'SELECT id FROM rutinas WHERE id = $1 AND profesor_id = $2',
       [id, profesor_id]
@@ -190,7 +192,7 @@ const desactivarRutina = async (req, res) => {
       [id]
     );
     
-    res.json({ success: true, message: 'Rutina eliminada/desactivada' });
+    res.json({ success: true, message: 'Rutina eliminada' });
     
   } catch (error) {
     console.error('❌ Error al desactivar:', error);

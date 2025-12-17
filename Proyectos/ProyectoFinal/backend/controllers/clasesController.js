@@ -7,6 +7,7 @@ const obtenerClases = async (req, res) => {
   try {
     const { fecha, tipo_clase_id } = req.query;
     
+    // LOGICA ORIGINAL QUE FUNCIONA PARA ALUMNOS
     let sql = `
       SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
              c.cupos_totales, c.cupos_disponibles, c.estado,
@@ -67,7 +68,8 @@ const obtenerMisClases = async (req, res) => {
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        INNER JOIN usuarios u ON c.profesor_id = u.id
        WHERE i.usuario_id = $1
-         AND (c.fecha >= (CURRENT_DATE - INTERVAL '1 day') OR i.asistio = TRUE)
+         -- COPIADO: Misma lógica de fecha que alumnos
+         AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
        ORDER BY c.fecha ASC, c.hora_inicio ASC`,
       [req.usuario.id]
     );
@@ -88,14 +90,13 @@ const obtenerMisClases = async (req, res) => {
 
 /**
  * Obtener clases del profesor (Agenda)
- * CORREGIDO: Consulta simplificada.
- * Trae TODO lo del profesor desde hace 1 mes hasta el futuro lejano.
- * Sin filtros de estado estrictos ni límites cortos.
+ * CORREGIDO: Se copia EXACTAMENTE la lógica de los alumnos.
+ * Solo muestra clases desde HOY en adelante (futuras).
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
-    console.log(`👨‍🏫 Buscando TODAS las clases para profesor ID: ${profesor_id}`);
+    console.log(`👨‍🏫 Buscando agenda FUTURA para profesor ID: ${profesor_id}`);
     
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
@@ -105,17 +106,13 @@ const obtenerClasesProfesor = async (req, res) => {
        FROM clases c
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        WHERE c.profesor_id = $1
-         -- Trae clases desde hace 30 días en adelante (historial reciente + todo el futuro)
-         AND c.fecha >= (CURRENT_DATE - INTERVAL '30 days')
+         AND c.estado = 'programada' -- Solo activas
+         AND c.fecha >= CURRENT_DATE -- Solo de hoy en adelante (igual que alumnos)
        ORDER BY c.fecha ASC, c.hora_inicio ASC`, 
       [profesor_id]
     );
     
-    console.log(`✅ Clases encontradas para el profesor: ${clases.length}`);
-    // Log para depurar qué fechas está trayendo realmente
-    if (clases.length > 0) {
-      console.log('📅 Fechas encontradas:', clases.map(c => c.fecha).join(', '));
-    }
+    console.log(`✅ Clases futuras encontradas: ${clases.length}`);
 
     res.json({
       success: true,
@@ -133,33 +130,35 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * Dashboard Profesor
- * CORREGIDO: Contadores alineados con la lógica simplificada
+ * CORREGIDO: Lógica alineada con la vista de Admin/Alumnos
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
     
-    // 1. Clases de Hoy (Usando rango para evitar error de zona horaria)
+    // 1. Clases de Hoy (Lógica estricta como en Admin)
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
-       AND fecha = CURRENT_DATE`,
+       AND fecha = CURRENT_DATE 
+       AND estado = 'programada'`,
       [profesor_id]
     );
 
-    // 2. Total Alumnos
+    // 2. Total Alumnos (Usuarios activos)
     const totalAlumnos = await query(
       `SELECT COUNT(*) as total FROM usuarios u
        INNER JOIN roles r ON u.rol_id = r.id
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
-    // 3. Clases de la Semana (Desde hoy a 7 días)
+    // 3. Clases de la Semana (Desde hoy + 7 días)
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
        AND fecha >= CURRENT_DATE 
-       AND fecha <= (CURRENT_DATE + INTERVAL '7 days')`,
+       AND fecha <= (CURRENT_DATE + INTERVAL '7 days')
+       AND estado = 'programada'`,
       [profesor_id]
     );
 

@@ -54,7 +54,8 @@ const obtenerClases = async (req, res) => {
 
 /**
  * Obtener clases del usuario (inscripciones)
- * CORREGIDO: Filtra clases pasadas donde NO hubo asistencia.
+ * CORREGIDO: Oculta el historial de inasistencias.
+ * Solo muestra: Clases futuras (pendientes) O Clases pasadas donde SÍ asistió.
  */
 const obtenerMisClases = async (req, res) => {
   try {
@@ -69,7 +70,7 @@ const obtenerMisClases = async (req, res) => {
        INNER JOIN usuarios u ON c.profesor_id = u.id
        WHERE i.usuario_id = $1
          AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
-       ORDER BY c.fecha DESC, c.hora_inicio DESC`,
+       ORDER BY c.fecha ASC, c.hora_inicio ASC`,
       [req.usuario.id]
     );
     
@@ -88,11 +89,13 @@ const obtenerMisClases = async (req, res) => {
 };
 
 /**
- * Obtener clases del profesor
+ * Obtener clases del profesor (Lista)
+ * CORREGIDO: Muestra todas las clases asignadas al profesor
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
+    console.log(`👨‍🏫 Buscando clases para profesor ID: ${profesor_id}`);
     
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
@@ -107,6 +110,8 @@ const obtenerClasesProfesor = async (req, res) => {
       [profesor_id]
     );
     
+    console.log(`✅ Clases encontradas para profesor: ${clases.length}`);
+
     res.json({
       success: true,
       data: clases
@@ -123,7 +128,7 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * NUEVO: Obtener Dashboard del Profesor (Estadísticas reales)
- * ESTA ES LA FUNCIÓN QUE FALTABA
+ * Esta función calcula los números para el panel de inicio del profesor.
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
@@ -144,7 +149,7 @@ const obtenerDashboardProfesor = async (req, res) => {
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
-    // 3. Clases de la Semana
+    // 3. Clases de la Semana (Próximos 7 días)
     const inicioSemana = new Date();
     const finSemana = new Date();
     finSemana.setDate(finSemana.getDate() + 7);
@@ -373,7 +378,7 @@ module.exports = {
   obtenerClases,
   obtenerMisClases,
   obtenerClasesProfesor,
-  obtenerDashboardProfesor, // <--- ESTO ES LO QUE TE FALTABA
+  obtenerDashboardProfesor, // Importante: Esto soluciona el error del Dashboard
   obtenerEstadisticasClases,
   inscribirseClase,
   cancelarInscripcion,

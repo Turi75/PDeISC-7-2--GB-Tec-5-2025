@@ -54,8 +54,7 @@ const obtenerClases = async (req, res) => {
 
 /**
  * Obtener clases del usuario (inscripciones)
- * CORREGIDO: Oculta el historial de inasistencias.
- * Solo muestra: Clases futuras (pendientes) O Clases pasadas donde SÍ asistió.
+ * CORREGIDO: Filtra desde el backend las inasistencias pasadas.
  */
 const obtenerMisClases = async (req, res) => {
   try {
@@ -89,13 +88,13 @@ const obtenerMisClases = async (req, res) => {
 };
 
 /**
- * Obtener clases del profesor (Lista)
- * CORREGIDO: Muestra todas las clases asignadas al profesor
+ * Obtener clases del profesor (Agenda)
+ * CORREGIDO: Orden ASCENDENTE para ver lo próximo (Hoy -> Mañana)
+ * Se incluye desde el día actual en adelante.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
-    console.log(`👨‍🏫 Buscando clases para profesor ID: ${profesor_id}`);
     
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
@@ -105,13 +104,12 @@ const obtenerClasesProfesor = async (req, res) => {
        FROM clases c
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        WHERE c.profesor_id = $1
-       ORDER BY c.fecha DESC, c.hora_inicio ASC
-       LIMIT 50`,
+         AND c.fecha >= CURRENT_DATE -- Solo mostrar desde hoy en adelante
+       ORDER BY c.fecha ASC, c.hora_inicio ASC -- Orden cronológico correcto
+       LIMIT 100`, 
       [profesor_id]
     );
     
-    console.log(`✅ Clases encontradas para profesor: ${clases.length}`);
-
     res.json({
       success: true,
       data: clases
@@ -127,42 +125,32 @@ const obtenerClasesProfesor = async (req, res) => {
 };
 
 /**
- * NUEVO: Obtener Dashboard del Profesor (Estadísticas reales)
- * Esta función calcula los números para el panel de inicio del profesor.
+ * Dashboard Profesor
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
-    const hoy = new Date().toISOString().split('T')[0];
     
-    // 1. Clases de Hoy
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
-       WHERE profesor_id = $1 AND fecha = $2 AND estado != 'cancelada'`,
-      [profesor_id, hoy]
+       WHERE profesor_id = $1 AND fecha = CURRENT_DATE AND estado != 'cancelada'`,
+      [profesor_id]
     );
 
-    // 2. Total Alumnos (Usuarios registrados activos en el sistema)
     const totalAlumnos = await query(
       `SELECT COUNT(*) as total FROM usuarios u
        INNER JOIN roles r ON u.rol_id = r.id
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
-    // 3. Clases de la Semana (Próximos 7 días)
-    const inicioSemana = new Date();
-    const finSemana = new Date();
-    finSemana.setDate(finSemana.getDate() + 7);
-    
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
-       AND fecha >= $2 AND fecha <= $3 
+       AND fecha >= CURRENT_DATE AND fecha <= (CURRENT_DATE + INTERVAL '7 days')
        AND estado != 'cancelada'`,
-      [profesor_id, inicioSemana.toISOString().split('T')[0], finSemana.toISOString().split('T')[0]]
+      [profesor_id]
     );
 
-    // 4. Mensajes sin leer
     const mensajes = await query(
       `SELECT COUNT(*) as total FROM mensajes 
        WHERE destinatario_id = $1 AND leido = FALSE`,
@@ -189,26 +177,18 @@ const obtenerDashboardProfesor = async (req, res) => {
 };
 
 /**
- * Obtener estadísticas de clases para admin
+ * Estadísticas Admin
  */
 const obtenerEstadisticasClases = async (req, res) => {
   try {
-    const hoy = new Date().toISOString().split('T')[0];
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
-       WHERE fecha = $1 AND estado = 'programada'`,
-      [hoy]
+       WHERE fecha = CURRENT_DATE AND estado = 'programada'`
     );
-    
-    const inicioSemana = new Date();
-    inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay() + 1);
-    const finSemana = new Date(inicioSemana);
-    finSemana.setDate(finSemana.getDate() + 6);
     
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
-       WHERE fecha >= $1 AND fecha <= $2 AND estado = 'programada'`,
-      [inicioSemana.toISOString().split('T')[0], finSemana.toISOString().split('T')[0]]
+       WHERE fecha >= CURRENT_DATE AND fecha <= (CURRENT_DATE + INTERVAL '7 days') AND estado = 'programada'`
     );
     
     const proximasClases = await query(
@@ -257,7 +237,6 @@ const inscribirseClase = async (req, res) => {
     if (clase.length === 0) return res.status(404).json({ success: false, message: 'Clase no encontrada' });
     if (clase[0].cupos_disponibles <= 0) return res.status(400).json({ success: false, message: 'No hay cupos disponibles' });
     
-    // Verificar suscripción
     const suscripcion = await query(
       `SELECT s.* FROM suscripciones s WHERE s.usuario_id = $1 AND s.estado = 'activa' AND s.fecha_fin >= CURRENT_DATE`,
       [usuario_id]
@@ -265,7 +244,6 @@ const inscribirseClase = async (req, res) => {
     
     if (suscripcion.length === 0) return res.status(400).json({ success: false, message: 'No tienes una suscripción activa.' });
     
-    // Validar inscripcion duplicada
     const yaInscrito = await query('SELECT id FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2', [usuario_id, clase_id]);
     
     if (yaInscrito.length > 0) return res.status(400).json({ success: false, message: 'Ya estás inscrito en esta clase' });
@@ -378,7 +356,7 @@ module.exports = {
   obtenerClases,
   obtenerMisClases,
   obtenerClasesProfesor,
-  obtenerDashboardProfesor, // Importante: Esto soluciona el error del Dashboard
+  obtenerDashboardProfesor,
   obtenerEstadisticasClases,
   inscribirseClase,
   cancelarInscripcion,

@@ -2,6 +2,7 @@ const { query } = require('../config/database');
 
 /**
  * Obtener todas las clases disponibles (Para el Home de alumnos)
+ * Se agrega margen de 1 día para evitar problemas de zona horaria
  */
 const obtenerClases = async (req, res) => {
   try {
@@ -16,7 +17,8 @@ const obtenerClases = async (req, res) => {
       FROM clases c
       INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
       INNER JOIN usuarios u ON c.profesor_id = u.id
-      WHERE c.estado = 'programada' AND c.fecha >= CURRENT_DATE
+      WHERE c.estado = 'programada' 
+        AND c.fecha >= (CURRENT_DATE - INTERVAL '1 day') -- Margen por zona horaria
     `;
     
     const params = [];
@@ -54,7 +56,7 @@ const obtenerClases = async (req, res) => {
 
 /**
  * Obtener clases del usuario (inscripciones)
- * Filtra para que el alumno solo vea historial de asistencia o clases futuras
+ * Muestra historial de asistencia Y clases futuras (con margen de error)
  */
 const obtenerMisClases = async (req, res) => {
   try {
@@ -68,7 +70,10 @@ const obtenerMisClases = async (req, res) => {
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        INNER JOIN usuarios u ON c.profesor_id = u.id
        WHERE i.usuario_id = $1
-         AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
+         AND (
+           c.fecha >= (CURRENT_DATE - INTERVAL '1 day') -- Clases futuras/hoy
+           OR i.asistio = TRUE -- O historial de asistencia
+         )
        ORDER BY c.fecha ASC, c.hora_inicio ASC`,
       [req.usuario.id]
     );
@@ -89,13 +94,13 @@ const obtenerMisClases = async (req, res) => {
 
 /**
  * Obtener clases del profesor (Agenda)
- * CORREGIDO: Se eliminó el filtro estricto de fecha que causaba que la lista estuviera vacía.
- * Ahora se basa en el ESTADO de la clase ('programada' o 'en_curso') o si es futura.
+ * CORREGIDO: Se usa (CURRENT_DATE - 1 day) para asegurar que las clases de "hoy"
+ * aparezcan siempre, sin importar la diferencia horaria del servidor.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
-    console.log(`👨‍🏫 Buscando clases para profesor ID: ${profesor_id}`);
+    console.log(`👨‍🏫 Buscando agenda para profesor ID: ${profesor_id}`);
     
     const clases = await query(
       `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
@@ -105,7 +110,7 @@ const obtenerClasesProfesor = async (req, res) => {
        FROM clases c
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        WHERE c.profesor_id = $1
-         AND (c.estado IN ('programada', 'en_curso') OR c.fecha >= CURRENT_DATE)
+         AND c.fecha >= (CURRENT_DATE - INTERVAL '1 day') -- Muestra desde ayer en adelante
        ORDER BY c.fecha ASC, c.hora_inicio ASC
        LIMIT 100`, 
       [profesor_id]
@@ -129,7 +134,6 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * Dashboard Profesor
- * CORREGIDO: Cálculos robustos para evitar ceros falsos
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {

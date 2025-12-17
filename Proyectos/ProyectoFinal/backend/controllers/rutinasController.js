@@ -1,7 +1,7 @@
 const { query } = require('../config/database');
 
 /**
- * Obtener rutinas del usuario
+ * Obtener rutinas del usuario (Para que el alumno vea sus rutinas)
  */
 const obtenerMisRutinas = async (req, res) => {
   try {
@@ -32,64 +32,48 @@ const obtenerMisRutinas = async (req, res) => {
 };
 
 /**
- * Obtener todos los alumnos (usuarios) disponibles para asignar rutinas
- * Sin restricción de que estén en clases del profesor
+ * Obtener todos los usuarios disponibles para asignar rutinas
+ * CORREGIDO: Consulta simplificada para evitar errores 500.
+ * Trae a todos los usuarios registrados activos.
  */
 const obtenerAlumnosParaRutinas = async (req, res) => {
   try {
-    console.log('📚 Obteniendo todos los alumnos para asignar rutinas...');
+    console.log('📚 Buscando usuarios registrados para sistema de rutinas...');
     
-    const alumnos = await query(
-      `SELECT 
-        u.id,
-        u.nombre,
-        u.apellido,
-        u.email,
-        u.dni,
-        COUNT(DISTINCT i.clase_id) as total_clases_inscritas,
-        STRING_AGG(DISTINCT tc.nombre, ', ') as clases_inscritas
-       FROM usuarios u
-       LEFT JOIN inscripciones i ON u.id = i.usuario_id
-       LEFT JOIN clases c ON i.clase_id = c.id
-       LEFT JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
-       WHERE u.rol = 'usuario' AND u.activo = TRUE
-       GROUP BY u.id, u.nombre, u.apellido, u.email, u.dni
-       ORDER BY u.nombre, u.apellido`
+    // Consulta simplificada: Solo trae usuarios activos
+    const usuarios = await query(
+      `SELECT id, nombre, apellido, email, dni 
+       FROM usuarios 
+       WHERE rol = 'usuario' AND activo = TRUE 
+       ORDER BY nombre ASC`
     );
     
-    console.log(`✅ Se encontraron ${alumnos.length} alumnos`);
+    console.log(`✅ Se encontraron ${usuarios.length} usuarios para asignar rutinas`);
     
     res.json({
       success: true,
-      data: alumnos
+      data: usuarios
     });
     
   } catch (error) {
-    console.error('❌ Error al obtener alumnos:', error);
+    console.error('❌ Error al obtener usuarios para rutinas:', error);
     res.status(500).json({
       success: false,
-      message: 'Error al obtener alumnos'
+      message: 'Error al obtener lista de usuarios'
     });
   }
 };
 
 /**
  * Asignar rutina a un alumno (solo profesores)
- * VERSIÓN MEJORADA: Permite asignar a cualquier usuario activo
  */
 const asignarRutina = async (req, res) => {
   try {
     const { usuario_id, titulo, descripcion, tipo_clase_id } = req.body;
     const profesor_id = req.usuario.id;
     
-    console.log('📝 Intentando asignar rutina:', {
-      profesor_id,
-      usuario_id,
-      titulo,
-      descripcion
-    });
+    console.log('📝 Asignando rutina:', { profesor_id, usuario_id, titulo });
     
-    // Validar campos obligatorios
     if (!usuario_id || !titulo || !descripcion) {
       return res.status(400).json({
         success: false,
@@ -97,35 +81,14 @@ const asignarRutina = async (req, res) => {
       });
     }
     
-    // Verificar que el usuario existe y es un alumno activo
-    const alumno = await query(
-      `SELECT id, nombre, apellido, email 
-       FROM usuarios 
-       WHERE id = $1 AND rol = 'usuario' AND activo = TRUE`,
-      [usuario_id]
-    );
-    
-    if (alumno.length === 0) {
-      console.log('❌ Usuario no encontrado o inactivo');
-      return res.status(404).json({
-        success: false,
-        message: 'El usuario no existe o no está activo'
-      });
-    }
-    
-    console.log('✅ Alumno encontrado:', alumno[0]);
-    
-    // Crear la rutina
     const fecha_asignacion = new Date().toISOString().split('T')[0];
     
     const resultado = await query(
       `INSERT INTO rutinas (profesor_id, usuario_id, titulo, descripcion, fecha_asignacion, tipo_clase_id, activa)
        VALUES ($1, $2, $3, $4, $5, $6, TRUE)
-       RETURNING id, titulo, descripcion, fecha_asignacion`,
+       RETURNING id, titulo`,
       [profesor_id, usuario_id, titulo, descripcion, fecha_asignacion, tipo_clase_id || null]
     );
-    
-    console.log('✅ Rutina creada exitosamente:', resultado[0]);
     
     res.status(201).json({
       success: true,
@@ -143,27 +106,21 @@ const asignarRutina = async (req, res) => {
 };
 
 /**
- * Obtener rutinas asignadas por el profesor
+ * Obtener rutinas asignadas por el profesor (Historial)
  */
 const obtenerRutinasAsignadas = async (req, res) => {
   try {
-    console.log('📚 Obteniendo rutinas asignadas del profesor:', req.usuario.id);
-    
     const rutinas = await query(
       `SELECT r.*, 
               u.nombre as alumno_nombre, 
               u.apellido as alumno_apellido,
-              u.email as alumno_email,
-              tc.nombre as tipo_clase
+              u.email as alumno_email
        FROM rutinas r
        INNER JOIN usuarios u ON r.usuario_id = u.id
-       LEFT JOIN tipos_clase tc ON r.tipo_clase_id = tc.id
        WHERE r.profesor_id = $1
        ORDER BY r.created_at DESC`,
       [req.usuario.id]
     );
-    
-    console.log(`✅ Se encontraron ${rutinas.length} rutinas asignadas`);
     
     res.json({
       success: true,
@@ -188,109 +145,62 @@ const actualizarRutina = async (req, res) => {
     const { titulo, descripcion } = req.body;
     const profesor_id = req.usuario.id;
     
-    console.log('✏️ Actualizando rutina:', { id, profesor_id, titulo });
-    
-    // Validar campos
-    if (!titulo || !descripcion) {
-      return res.status(400).json({
-        success: false,
-        message: 'Título y descripción son obligatorios'
-      });
-    }
-    
-    // Verificar que la rutina pertenece al profesor
-    const rutina = await query(
-      'SELECT id, titulo FROM rutinas WHERE id = $1 AND profesor_id = $2',
+    // Validar que la rutina pertenezca al profesor
+    const check = await query(
+      'SELECT id FROM rutinas WHERE id = $1 AND profesor_id = $2',
       [id, profesor_id]
     );
     
-    if (rutina.length === 0) {
-      console.log('❌ Rutina no encontrada');
-      return res.status(404).json({
-        success: false,
-        message: 'Rutina no encontrada o no tienes permiso para modificarla'
-      });
+    if (check.length === 0) {
+      return res.status(404).json({ success: false, message: 'Rutina no encontrada' });
     }
     
-    // Actualizar la rutina
     await query(
       'UPDATE rutinas SET titulo = $1, descripcion = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
       [titulo, descripcion, id]
     );
     
-    console.log('✅ Rutina actualizada exitosamente');
-    
-    res.json({
-      success: true,
-      message: 'Rutina actualizada exitosamente'
-    });
+    res.json({ success: true, message: 'Rutina actualizada' });
     
   } catch (error) {
-    console.error('❌ Error al actualizar rutina:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al actualizar rutina'
-    });
+    console.error('❌ Error al actualizar:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar rutina' });
   }
 };
 
 /**
- * Desactivar rutina (soft delete)
+ * Desactivar rutina
  */
 const desactivarRutina = async (req, res) => {
   try {
     const { id } = req.params;
     const profesor_id = req.usuario.id;
     
-    console.log('🗑️ Desactivando rutina:', { id, profesor_id });
-    
-    // Verificar que la rutina pertenece al profesor
-    const rutina = await query(
-      'SELECT id, titulo, activa FROM rutinas WHERE id = $1 AND profesor_id = $2',
+    const check = await query(
+      'SELECT id FROM rutinas WHERE id = $1 AND profesor_id = $2',
       [id, profesor_id]
     );
     
-    if (rutina.length === 0) {
-      console.log('❌ Rutina no encontrada');
-      return res.status(404).json({
-        success: false,
-        message: 'Rutina no encontrada o no tienes permiso para desactivarla'
-      });
+    if (check.length === 0) {
+      return res.status(404).json({ success: false, message: 'Rutina no encontrada' });
     }
     
-    if (!rutina[0].activa) {
-      console.log('⚠️ La rutina ya estaba desactivada');
-      return res.status(400).json({
-        success: false,
-        message: 'La rutina ya está desactivada'
-      });
-    }
-    
-    // Desactivar la rutina
     await query(
-      'UPDATE rutinas SET activa = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+      'UPDATE rutinas SET activa = FALSE WHERE id = $1',
       [id]
     );
     
-    console.log('✅ Rutina desactivada exitosamente');
-    
-    res.json({
-      success: true,
-      message: 'Rutina desactivada exitosamente'
-    });
+    res.json({ success: true, message: 'Rutina eliminada/desactivada' });
     
   } catch (error) {
-    console.error('❌ Error al desactivar rutina:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Error al desactivar rutina'
-    });
+    console.error('❌ Error al desactivar:', error);
+    res.status(500).json({ success: false, message: 'Error al eliminar rutina' });
   }
 };
 
 module.exports = {
   obtenerMisRutinas,
-  obtenerAlumnosParaRutinas,  // NUEVO
+  obtenerAlumnosParaRutinas,
   asignarRutina,
   obtenerRutinasAsignadas,
   actualizarRutina,

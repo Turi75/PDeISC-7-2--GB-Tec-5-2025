@@ -1,18 +1,108 @@
 const { query } = require('../config/database');
 
 /**
+ * Obtener todas las clases disponibles (Para el Home de alumnos/Admin)
+ * ESTA FUNCIONA BIEN - NO TOCAR
+ */
+const obtenerClases = async (req, res) => {
+  try {
+    const { fecha, tipo_clase_id } = req.query;
+    
+    let sql = `
+      SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
+             c.cupos_totales, c.cupos_disponibles, c.estado,
+             tc.nombre as tipo_clase, tc.descripcion, tc.imagen,
+             u.nombre as profesor_nombre, u.apellido as profesor_apellido,
+             c.profesor_id
+      FROM clases c
+      INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
+      INNER JOIN usuarios u ON c.profesor_id = u.id
+      WHERE c.estado = 'programada' AND c.fecha >= CURRENT_DATE
+    `;
+    
+    const params = [];
+    let paramIndex = 1;
+    
+    if (fecha) {
+      sql += ` AND c.fecha = $${paramIndex}`;
+      params.push(fecha);
+      paramIndex++;
+    }
+    
+    if (tipo_clase_id) {
+      sql += ` AND c.tipo_clase_id = $${paramIndex}`;
+      params.push(tipo_clase_id);
+      paramIndex++;
+    }
+    
+    sql += ' ORDER BY c.fecha ASC, c.hora_inicio ASC';
+    
+    const clases = await query(sql, params);
+    
+    res.json({
+      success: true,
+      data: clases
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener clases:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener clases'
+    });
+  }
+};
+
+/**
+ * Obtener clases del usuario (inscripciones)
+ */
+const obtenerMisClases = async (req, res) => {
+  try {
+    const clases = await query(
+      `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
+              tc.nombre as tipo_clase, tc.descripcion,
+              u.nombre as profesor_nombre, u.apellido as profesor_apellido,
+              i.asistio, i.fecha_inscripcion
+       FROM inscripciones i
+       INNER JOIN clases c ON i.clase_id = c.id
+       INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
+       INNER JOIN usuarios u ON c.profesor_id = u.id
+       WHERE i.usuario_id = $1
+         AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
+       ORDER BY c.fecha ASC, c.hora_inicio ASC`,
+      [req.usuario.id]
+    );
+    
+    res.json({
+      success: true,
+      data: clases
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener mis clases:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener tus clases'
+    });
+  }
+};
+
+/**
  * Obtener clases del profesor (Agenda)
- * CORREGIDO: Aseguramos que el ID sea numérico y la fecha sea comparada correctamente
+ * CORREGIDO: Usamos EXACTAMENTE la misma lógica que `obtenerClases` (Alumnos)
+ * pero filtramos por el ID del profesor.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
-    // Convertimos a Int para asegurar compatibilidad con PostgreSQL
-    const profesor_id = parseInt(req.usuario.id);
+    const profesor_id = req.usuario.id;
+    console.log(`👨‍🏫 ID Profesor Logueado: ${profesor_id}`);
     
-    console.log(`👨‍🏫 Buscando clases para Profesor ID: ${profesor_id}`);
+    // DEBUG: Verificar si existen clases en general para este ID, sin importar fecha
+    const checkTotal = await query('SELECT count(*) as total FROM clases WHERE profesor_id = $1', [profesor_id]);
+    console.log(`🔎 Total histórico de clases para este ID en BD: ${checkTotal[0].total}`);
 
-    const sql = `
-      SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
+    const clases = await query(
+      `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
              c.cupos_totales, c.cupos_disponibles, c.estado,
              tc.nombre as tipo_clase, tc.descripcion, tc.imagen,
              (SELECT COUNT(*) FROM inscripciones WHERE clase_id = c.id) as inscritos
@@ -20,13 +110,12 @@ const obtenerClasesProfesor = async (req, res) => {
       INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
       WHERE c.profesor_id = $1 
         AND c.estado = 'programada' 
-        AND c.fecha >= CURRENT_DATE
-      ORDER BY c.fecha ASC, c.hora_inicio ASC
-    `;
-
-    const clases = await query(sql, [profesor_id]);
+        AND c.fecha >= CURRENT_DATE -- Misma condición que alumnos
+      ORDER BY c.fecha ASC, c.hora_inicio ASC`,
+      [profesor_id]
+    );
     
-    console.log(`✅ Clases encontradas para profesor ${profesor_id}: ${clases.length}`);
+    console.log(`✅ Clases próximas encontradas para profesor: ${clases.length}`);
 
     res.json({
       success: true,
@@ -34,7 +123,7 @@ const obtenerClasesProfesor = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Error al obtener clases del profesor:', error);
+    console.error('Error al obtener clases del profesor:', error);
     res.status(500).json({
       success: false,
       message: 'Error al obtener tus clases'
@@ -44,13 +133,13 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * Dashboard Profesor
- * CORREGIDO: Lógica de conteo robusta
+ * CORREGIDO: Lógica alineada con la lista de clases
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
-    const profesor_id = parseInt(req.usuario.id);
+    const profesor_id = req.usuario.id;
     
-    // 1. Clases de Hoy (Usamos DATE() para evitar problemas de formato)
+    // 1. Clases de Hoy
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
@@ -66,7 +155,7 @@ const obtenerDashboardProfesor = async (req, res) => {
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
-    // 3. Clases de la Semana (Desde hoy en adelante)
+    // 3. Clases de la Semana (Desde Hoy hasta 7 días)
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
@@ -82,6 +171,11 @@ const obtenerDashboardProfesor = async (req, res) => {
        WHERE destinatario_id = $1 AND leido = FALSE`,
       [profesor_id]
     );
+
+    console.log('📊 Dashboard Data:', {
+        hoy: clasesHoy[0].total,
+        semana: clasesSemana[0].total
+    });
 
     res.json({
       success: true,
@@ -102,7 +196,181 @@ const obtenerDashboardProfesor = async (req, res) => {
   }
 };
 
-// ... (Mantén el resto de funciones igual: obtenerClases, inscribirseClase, etc.)
+/**
+ * Estadísticas Admin
+ */
+const obtenerEstadisticasClases = async (req, res) => {
+  try {
+    const clasesHoy = await query(
+      `SELECT COUNT(*) as total FROM clases 
+       WHERE fecha = CURRENT_DATE AND estado = 'programada'`
+    );
+    
+    const clasesSemana = await query(
+      `SELECT COUNT(*) as total FROM clases 
+       WHERE fecha >= CURRENT_DATE AND fecha <= (CURRENT_DATE + INTERVAL '7 days') AND estado = 'programada'`
+    );
+    
+    const proximasClases = await query(
+      `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
+              c.cupos_totales, c.cupos_disponibles,
+              tc.nombre as tipo_clase,
+              u.nombre as profesor_nombre, u.apellido as profesor_apellido
+       FROM clases c
+       INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
+       INNER JOIN usuarios u ON c.profesor_id = u.id
+       WHERE c.fecha >= CURRENT_DATE AND c.estado = 'programada'
+       ORDER BY c.fecha ASC, c.hora_inicio ASC
+       LIMIT 10`
+    );
+    
+    res.json({
+      success: true,
+      data: {
+        clases_hoy: parseInt(clasesHoy[0].total),
+        clases_semana: parseInt(clasesSemana[0].total),
+        proximas_clases: proximasClases
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener estadísticas'
+    });
+  }
+};
+
+/**
+ * Inscribirse a una clase
+ */
+const inscribirseClase = async (req, res) => {
+  try {
+    const { clase_id } = req.body;
+    const usuario_id = req.usuario.id;
+    
+    if (!clase_id) return res.status(400).json({ success: false, message: 'ID de clase obligatorio' });
+    
+    const clase = await query('SELECT * FROM clases WHERE id = $1 AND estado = $2', [clase_id, 'programada']);
+    
+    if (clase.length === 0) return res.status(404).json({ success: false, message: 'Clase no encontrada' });
+    if (clase[0].cupos_disponibles <= 0) return res.status(400).json({ success: false, message: 'No hay cupos disponibles' });
+    
+    const suscripcion = await query(
+      `SELECT s.* FROM suscripciones s WHERE s.usuario_id = $1 AND s.estado = 'activa' AND s.fecha_fin >= CURRENT_DATE`,
+      [usuario_id]
+    );
+    
+    if (suscripcion.length === 0) return res.status(400).json({ success: false, message: 'No tienes una suscripción activa.' });
+    
+    const yaInscrito = await query('SELECT id FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2', [usuario_id, clase_id]);
+    
+    if (yaInscrito.length > 0) return res.status(400).json({ success: false, message: 'Ya estás inscrito en esta clase' });
+    
+    await query('INSERT INTO inscripciones (usuario_id, clase_id) VALUES ($1, $2)', [usuario_id, clase_id]);
+    await query('UPDATE clases SET cupos_disponibles = cupos_disponibles - 1 WHERE id = $1', [clase_id]);
+    
+    res.status(201).json({ success: true, message: 'Inscripción exitosa' });
+    
+  } catch (error) {
+    console.error('Error al inscribirse:', error);
+    res.status(500).json({ success: false, message: 'Error al inscribirse' });
+  }
+};
+
+/**
+ * Cancelar inscripción
+ */
+const cancelarInscripcion = async (req, res) => {
+  try {
+    const { clase_id } = req.params;
+    const usuario_id = req.usuario.id;
+    
+    const inscripcion = await query('SELECT id FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2', [usuario_id, clase_id]);
+    
+    if (inscripcion.length === 0) return res.status(404).json({ success: false, message: 'No estás inscrito en esta clase' });
+    
+    await query('DELETE FROM inscripciones WHERE usuario_id = $1 AND clase_id = $2', [usuario_id, clase_id]);
+    await query('UPDATE clases SET cupos_disponibles = cupos_disponibles + 1 WHERE id = $1', [clase_id]);
+    
+    res.json({ success: true, message: 'Inscripción cancelada' });
+    
+  } catch (error) {
+    console.error('Error al cancelar inscripción:', error);
+    res.status(500).json({ success: false, message: 'Error al cancelar inscripción' });
+  }
+};
+
+/**
+ * Crear clase (admin)
+ */
+const crearClase = async (req, res) => {
+  try {
+    const { tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales } = req.body;
+    
+    const resultado = await query(
+      `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales, cupos_disponibles)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      [tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales, cupos_totales]
+    );
+    
+    res.status(201).json({ success: true, message: 'Clase creada exitosamente', data: { id: resultado[0].id } });
+    
+  } catch (error) {
+    console.error('Error al crear clase:', error);
+    res.status(500).json({ success: false, message: 'Error al crear clase' });
+  }
+};
+
+/**
+ * Generar clases automáticamente
+ */
+const generarClasesSemanales = async (req, res) => {
+  try {
+    const { fecha_inicio } = req.body;
+    const inicio = fecha_inicio ? new Date(fecha_inicio) : new Date();
+    
+    const horarios = await query(
+      `SELECT hc.*, tc.duracion_minutos, tc.capacidad_maxima
+       FROM horarios_clase hc
+       INNER JOIN tipos_clase tc ON hc.tipo_clase_id = tc.id
+       WHERE hc.activo = TRUE`
+    );
+    
+    if (horarios.length === 0) return res.json({ success: true, message: 'No hay horarios configurados', data: { clasesCreadas: 0 } });
+    
+    const diasSemana = { 'Lunes': 1, 'Martes': 2, 'Miércoles': 3, 'Jueves': 4, 'Viernes': 5, 'Sábado': 6, 'Domingo': 0 };
+    let clasesCreadas = 0;
+    
+    for (let i = 0; i < 7; i++) {
+      const fecha = new Date(inicio);
+      fecha.setDate(fecha.getDate() + i);
+      const diaSemana = fecha.getDay();
+      const horariosDelDia = horarios.filter(h => diasSemana[h.dia_semana] === diaSemana);
+      
+      for (const horario of horariosDelDia) {
+        const existe = await query(
+          `SELECT id FROM clases WHERE tipo_clase_id = $1 AND profesor_id = $2 AND fecha = $3 AND hora_inicio = $4`,
+          [horario.tipo_clase_id, horario.profesor_id, fecha.toISOString().split('T')[0], horario.hora_inicio]
+        );
+        
+        if (existe.length === 0) {
+          await query(
+            `INSERT INTO clases (tipo_clase_id, profesor_id, fecha, hora_inicio, hora_fin, cupos_totales, cupos_disponibles)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+            [horario.tipo_clase_id, horario.profesor_id, fecha.toISOString().split('T')[0], horario.hora_inicio, horario.hora_fin, horario.capacidad_maxima, horario.capacidad_maxima]
+          );
+          clasesCreadas++;
+        }
+      }
+    }
+    res.json({ success: true, message: `Se generaron ${clasesCreadas} clases nuevas`, data: { clasesCreadas } });
+  } catch (error) {
+    console.error('❌ Error al generar clases:', error);
+    res.status(500).json({ success: false, message: 'Error al generar clases' });
+  }
+};
 
 module.exports = {
   obtenerClases,
@@ -114,4 +382,4 @@ module.exports = {
   cancelarInscripcion,
   crearClase,
   generarClasesSemanales
-};  
+};

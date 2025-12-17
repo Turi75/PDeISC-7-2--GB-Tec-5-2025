@@ -1,13 +1,13 @@
 const { query } = require('../config/database');
 
 /**
- * Obtener todas las clases disponibles (Para el Home de alumnos)
+ * Obtener todas las clases disponibles (Para el Home de alumnos/Admin)
+ * ESTA FUNCIONA BIEN - NO TOCAR
  */
 const obtenerClases = async (req, res) => {
   try {
     const { fecha, tipo_clase_id } = req.query;
     
-    // LOGICA ORIGINAL QUE FUNCIONA PARA ALUMNOS
     let sql = `
       SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
              c.cupos_totales, c.cupos_disponibles, c.estado,
@@ -68,7 +68,6 @@ const obtenerMisClases = async (req, res) => {
        INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
        INNER JOIN usuarios u ON c.profesor_id = u.id
        WHERE i.usuario_id = $1
-         -- COPIADO: Misma lógica de fecha que alumnos
          AND (c.fecha >= CURRENT_DATE OR i.asistio = TRUE)
        ORDER BY c.fecha ASC, c.hora_inicio ASC`,
       [req.usuario.id]
@@ -90,29 +89,33 @@ const obtenerMisClases = async (req, res) => {
 
 /**
  * Obtener clases del profesor (Agenda)
- * CORREGIDO: Se copia EXACTAMENTE la lógica de los alumnos.
- * Solo muestra clases desde HOY en adelante (futuras).
+ * CORREGIDO: Usamos EXACTAMENTE la misma lógica que `obtenerClases` (Alumnos)
+ * pero filtramos por el ID del profesor.
  */
 const obtenerClasesProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
-    console.log(`👨‍🏫 Buscando agenda FUTURA para profesor ID: ${profesor_id}`);
+    console.log(`👨‍🏫 ID Profesor Logueado: ${profesor_id}`);
     
+    // DEBUG: Verificar si existen clases en general para este ID, sin importar fecha
+    const checkTotal = await query('SELECT count(*) as total FROM clases WHERE profesor_id = $1', [profesor_id]);
+    console.log(`🔎 Total histórico de clases para este ID en BD: ${checkTotal[0].total}`);
+
     const clases = await query(
-      `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin,
-              c.cupos_totales, c.cupos_disponibles, c.estado,
-              tc.nombre as tipo_clase, tc.descripcion,
-              (SELECT COUNT(*) FROM inscripciones WHERE clase_id = c.id) as inscritos
-       FROM clases c
-       INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
-       WHERE c.profesor_id = $1
-         AND c.estado = 'programada' -- Solo activas
-         AND c.fecha >= CURRENT_DATE -- Solo de hoy en adelante (igual que alumnos)
-       ORDER BY c.fecha ASC, c.hora_inicio ASC`, 
+      `SELECT c.id, c.fecha, c.hora_inicio, c.hora_fin, 
+             c.cupos_totales, c.cupos_disponibles, c.estado,
+             tc.nombre as tipo_clase, tc.descripcion, tc.imagen,
+             (SELECT COUNT(*) FROM inscripciones WHERE clase_id = c.id) as inscritos
+      FROM clases c
+      INNER JOIN tipos_clase tc ON c.tipo_clase_id = tc.id
+      WHERE c.profesor_id = $1 
+        AND c.estado = 'programada' 
+        AND c.fecha >= CURRENT_DATE -- Misma condición que alumnos
+      ORDER BY c.fecha ASC, c.hora_inicio ASC`,
       [profesor_id]
     );
     
-    console.log(`✅ Clases futuras encontradas: ${clases.length}`);
+    console.log(`✅ Clases próximas encontradas para profesor: ${clases.length}`);
 
     res.json({
       success: true,
@@ -130,13 +133,13 @@ const obtenerClasesProfesor = async (req, res) => {
 
 /**
  * Dashboard Profesor
- * CORREGIDO: Lógica alineada con la vista de Admin/Alumnos
+ * CORREGIDO: Lógica alineada con la lista de clases
  */
 const obtenerDashboardProfesor = async (req, res) => {
   try {
     const profesor_id = req.usuario.id;
     
-    // 1. Clases de Hoy (Lógica estricta como en Admin)
+    // 1. Clases de Hoy
     const clasesHoy = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
@@ -145,14 +148,14 @@ const obtenerDashboardProfesor = async (req, res) => {
       [profesor_id]
     );
 
-    // 2. Total Alumnos (Usuarios activos)
+    // 2. Alumnos Activos (Total del sistema)
     const totalAlumnos = await query(
       `SELECT COUNT(*) as total FROM usuarios u
        INNER JOIN roles r ON u.rol_id = r.id
        WHERE r.nombre = 'usuario' AND u.activo = TRUE`
     );
 
-    // 3. Clases de la Semana (Desde hoy + 7 días)
+    // 3. Clases de la Semana (Desde Hoy hasta 7 días)
     const clasesSemana = await query(
       `SELECT COUNT(*) as total FROM clases 
        WHERE profesor_id = $1 
@@ -168,6 +171,11 @@ const obtenerDashboardProfesor = async (req, res) => {
        WHERE destinatario_id = $1 AND leido = FALSE`,
       [profesor_id]
     );
+
+    console.log('📊 Dashboard Data:', {
+        hoy: clasesHoy[0].total,
+        semana: clasesSemana[0].total
+    });
 
     res.json({
       success: true,

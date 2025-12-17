@@ -12,8 +12,7 @@ const clasesRoutes = require('./routes/clasesRoutes');
 const planesRoutes = require('./routes/planesRoutes');
 const mensajesRoutes = require('./routes/mensajesRoutes');
 const rutinasRoutes = require('./routes/rutinasRoutes');
-const usuariosRoutes = require('./routes/usuariosRoutes');
-const asistenciaRoutes = require('./routes/asistenciaRoutes'); // NUEVO
+const usuariosRoutes = require('./routes/usuariosRoutes'); // NUEVO
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,8 +65,7 @@ app.get('/', (req, res) => {
       planes: '/api/planes',
       mensajes: '/api/mensajes',
       rutinas: '/api/rutinas',
-      usuarios: '/api/usuarios',
-      asistencia: '/api/asistencia' // NUEVO
+      usuarios: '/api/usuarios' // NUEVO
     }
   });
 });
@@ -78,8 +76,7 @@ app.use('/api/clases', clasesRoutes);
 app.use('/api/planes', planesRoutes);
 app.use('/api/mensajes', mensajesRoutes);
 app.use('/api/rutinas', rutinasRoutes);
-app.use('/api/usuarios', usuariosRoutes);
-app.use('/api/asistencia', asistenciaRoutes); // NUEVO
+app.use('/api/usuarios', usuariosRoutes); // NUEVO
 
 // ============================================
 // MANEJO DE ERRORES
